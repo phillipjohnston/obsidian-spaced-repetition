@@ -52,28 +52,29 @@ export function schedule(
 ): Record<string, number> {
     delayBeforeReview = Math.max(0, Math.floor(delayBeforeReview / (24 * 3600 * 1000)));
 
-    if (response === ReviewResponse.Easy) {
-        ease += 20;
-        interval = ((interval + delayBeforeReview) * ease) / 100;
-        interval *= settingsObj.easyBonus;
-    } else if (response === ReviewResponse.Good) {
-        interval = ((interval + delayBeforeReview / 2) * ease) / 100;
-    } else if (response === ReviewResponse.Hard) {
-        ease = Math.max(130, ease - 20);
-        interval = Math.max(
-            1,
-            (interval + delayBeforeReview / 4) * settingsObj.lapsesIntervalChange,
-        );
-    }
-
-    // replaces random fuzz with load balancing over the fuzz interval
-    if (dueDates !== undefined) {
-        interval = Math.round(interval);
-        if (!Object.prototype.hasOwnProperty.call(dueDates, interval)) {
-            dueDates[interval] = 0;
-        } else {
-            // disable fuzzing for small intervals
-            if (interval > 4) {
+    // This represents normal SRS behavior
+    if(ease >= 0)
+    {
+        if (response === ReviewResponse.Easy) {
+            ease += 20;
+            interval = ((interval + delayBeforeReview) * ease) / 100;
+            interval *= settingsObj.easyBonus;
+        } else if (response === ReviewResponse.Good) {
+            interval = ((interval + delayBeforeReview / 2) * ease) / 100;
+        } else if (response === ReviewResponse.Hard) {
+            ease = Math.max(130, ease - 20);
+            interval = Math.max(
+                1,
+                (interval + delayBeforeReview / 4) * settingsObj.lapsesIntervalChange,
+            );
+        }
+        // replaces random fuzz with load balancing over the fuzz interval
+        if (dueDates !== undefined) {
+            interval = Math.round(interval);
+            if (!Object.prototype.hasOwnProperty.call(dueDates, interval)) {
+                dueDates[interval] = 0;
+            } else {
+                // This code fuzzes for all intervals, not just > 4
                 let fuzz = 0;
                 if (interval < 7) fuzz = 1;
                 else if (interval < 30) fuzz = Math.max(2, Math.floor(interval * 0.15));
@@ -91,9 +92,47 @@ export function schedule(
                     }
                 }
             }
+
+            dueDates[interval]++;
+        }
+    }
+    else
+    {
+        // The goal here is a geometric series that allows for greatly increasing expansion of intervals
+        // so that we reduce our iteration.
+        // Idea comes from gwern: https://gwern.net/note/statistic#program-for-non-spaced-repetition-review-of-past-written-materials-for-serendipity-rediscovery-archive-revisiter
+        // He uses a constant of 7.7238823216. This gives an expectation of four reviews over a 30 year period.
+        // I wanted more than that, so I went lower, and trying 2.91 as the ratio for now.
+        // He also uses a formula of next_review(iteration, ratio, initial_value) = a * (1-r^n) / (1-r)
+        // But I went with a simpler implementation of r * a(n-1) as I don't currently have number
+        // of iterations tracked, so his formula wouldn't work.
+
+        // TBD: do we fuzz anti-srs?
+
+        // For now, we're hacking on top of the existing idea of ease/interval.
+        // ease will represent "ratio", and is expected to be negative to get into this logic loop,
+        // so we must correct for that.
+        // "interval" will be "a", the initial value (or previous iteration)
+
+        // Response affects the ease
+        // For most case, just review normal
+        if (response === ReviewResponse.Easy) {
+            ease *= 1.5;
+        } else if (response === ReviewResponse.Hard) {
+            ease *= 0.5;
         }
 
-        dueDates[interval]++;
+        // Special case for the first interval: we'll go to our planned initial review point,
+        // which is 30 days out
+        if(interval == 1)
+        {
+            interval = 30;
+        }
+        else
+        {
+            // remember, ease is marked negative...
+            interval = (interval + delayBeforeReview) * (-1 * ease);
+        }
     }
 
     interval = Math.min(interval, settingsObj.maximumInterval);
