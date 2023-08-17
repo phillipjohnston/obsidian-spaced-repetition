@@ -1,7 +1,7 @@
 {
-    "name": "obsidian-spaced-repetition",
-    "version": "1.10.1",
-    "description": "Fight the forgetting curve by reviewing flashcards & entire notes.",
+    "name": "obsidian-note-review",
+    "version": "1.0.0",
+    "description": "Note review, anti-srs, incremental writing",
     "main": "main.js",
     "scripts": {
         "build": "node esbuild.config.mjs production",
@@ -17,7 +17,7 @@
         "spaced-repetition",
         "flashcards"
     ],
-    "author": "Stephen Mwangi",
+    "author": "Phillip Johnston",
     "license": "MIT",
     "devDependencies": {
         "@types/jest": "^29.5.3",
