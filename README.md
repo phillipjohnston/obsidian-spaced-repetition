@@ -1,3 +1,30 @@
+## Requirements
+
+- pnpm
+- esbuild
+
+```
+brew install pnpm esbuild
+```
+
+to set up:
+```
+pnpm install
+```
+
+to build:
+
+```
+pnpm dev
+```
+
+If you want to run repo inside your vault, need to link after building:
+
+```
+    ln -s build/main.js main.js
+```
+
+
 # Flashcard-Based and Note-Based Spaced Repetition Plugin
 
 <img src="https://img.shields.io/github/downloads/st3v3nmw/obsidian-spaced-repetition/total" /> <img src="https://img.shields.io/github/downloads/st3v3nmw/obsidian-spaced-repetition/latest/total?style=flat-square" /> <img src="https://img.shields.io/github/manifest-json/v/st3v3nmw/obsidian-spaced-repetition?style=flat-square" />
