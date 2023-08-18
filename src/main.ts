@@ -458,8 +458,43 @@ export default class SRPlugin extends Plugin {
         let fileText: string = await this.app.vault.read(note);
         let ease: number, interval: number, delayBeforeReview: number;
         const now: number = Date.now();
-        // new note
-        if (
+        // new anti-srs note TODO redo this logic
+        if(
+            !Object.prototype.hasOwnProperty.call(frontmatter, "sr-due") &&
+            Object.prototype.hasOwnProperty.call(frontmatter, "sr-ease") &&
+            frontmatter["sr-ease"] < 0
+        ) {
+            console.log("Scheduling an anti-srs note for the first time\n");
+            interval = 1;
+            ease = frontmatter["sr-ease"];
+            delayBeforeReview = 0;
+            console.log("Ease: " + ease + "\n");
+            console.log("interval: " + interval + "\n");
+            console.log("delayBeforeReview: " + delayBeforeReview + "\n");
+        }
+        // new interval note TODO redo this logic
+        else if(
+            !Object.prototype.hasOwnProperty.call(frontmatter, "sr-due") &&
+            Object.prototype.hasOwnProperty.call(frontmatter, "sr-ease") &&
+            frontmatter["sr-ease"] == 0
+        ) {
+            console.log("Scheduling an interval note for the first time\n");
+            if(Object.prototype.hasOwnProperty.call(frontmatter, "sr-interval"))
+            {
+                interval = frontmatter["sr-interval"];
+            }
+            else
+            {
+                interval = 30;
+            }
+            ease = frontmatter["sr-ease"];
+            delayBeforeReview = 0;
+            console.log("Ease: " + ease + "\n");
+            console.log("interval: " + interval + "\n");
+            console.log("delayBeforeReview: " + delayBeforeReview + "\n");
+        }
+        // New normal note
+        else if (
             !(
                 Object.prototype.hasOwnProperty.call(frontmatter, "sr-due") &&
                 Object.prototype.hasOwnProperty.call(frontmatter, "sr-interval") &&
@@ -515,6 +550,11 @@ export default class SRPlugin extends Plugin {
                     .valueOf();
         }
 
+        console.log("Calling schedule\n");
+        console.log("Ease: " + ease + "\n");
+            console.log("interval: " + interval + "\n");
+            console.log("delayBeforeReview: " + delayBeforeReview + "\n");
+
         const schedObj: Record<string, number> = schedule(
             response,
             interval,
@@ -529,6 +569,8 @@ export default class SRPlugin extends Plugin {
         const due = window.moment(now + interval * 24 * 3600 * 1000);
         const dueString: string = due.format("YYYY-MM-DD");
 
+        // TODO: adjust for initial partial YAML
+        // OR DO THIS BETTER: PIECEWISE UPDATE (e.g., replace due, then interval, then ease)
         // check if scheduling info exists
         if (SCHEDULING_INFO_REGEX.test(fileText)) {
             const schedulingInfo = SCHEDULING_INFO_REGEX.exec(fileText);
