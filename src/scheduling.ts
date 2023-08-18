@@ -53,7 +53,7 @@ export function schedule(
     delayBeforeReview = Math.max(0, Math.floor(delayBeforeReview / (24 * 3600 * 1000)));
 
     // This represents normal SRS behavior
-    if(ease >= 0)
+    if(ease > 0)
     {
         if (response === ReviewResponse.Easy) {
             ease += 20;
@@ -68,6 +68,7 @@ export function schedule(
                 (interval + delayBeforeReview / 4) * settingsObj.lapsesIntervalChange,
             );
         }
+
         // replaces random fuzz with load balancing over the fuzz interval
         if (dueDates !== undefined) {
             interval = Math.round(interval);
@@ -95,6 +96,21 @@ export function schedule(
 
             dueDates[interval]++;
         }
+
+        interval = Math.round(interval * 10) / 10
+    }
+    else if(ease == 0)
+    {
+        // When ease is zero, we just review a note on a periodic basis.
+
+        // Easy and hard adjust the periodic interval
+        if (response === ReviewResponse.Easy) {
+            interval *= 1.2;
+        } else if (response === ReviewResponse.Hard) {
+            interval *= 0.5;
+        }
+
+        interval = Math.floor(interval);
     }
     else
     {
@@ -103,6 +119,7 @@ export function schedule(
         // Idea comes from gwern: https://gwern.net/note/statistic#program-for-non-spaced-repetition-review-of-past-written-materials-for-serendipity-rediscovery-archive-revisiter
         // He uses a constant of 7.7238823216. This gives an expectation of four reviews over a 30 year period.
         // I wanted more than that, so I went lower, and trying 2.91 as the ratio for now.
+        // I don't have a way to create this in code, so
         // He also uses a formula of next_review(iteration, ratio, initial_value) = a * (1-r^n) / (1-r)
         // But I went with a simpler implementation of r * a(n-1) as I don't currently have number
         // of iterations tracked, so his formula wouldn't work.
@@ -131,13 +148,13 @@ export function schedule(
         else
         {
             // remember, ease is marked negative...
-            interval = (interval + delayBeforeReview) * (-1 * ease);
+           interval =  Math.floor((interval + delayBeforeReview) * (-1 * ease));
         }
     }
 
     interval = Math.min(interval, settingsObj.maximumInterval);
 
-    return { interval: Math.round(interval * 10) / 10, ease };
+    return { interval, ease };
 }
 
 export function textInterval(interval: number, isMobile: boolean): string {
