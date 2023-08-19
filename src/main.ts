@@ -19,6 +19,9 @@ import {
     SCHEDULING_INFO_REGEX,
     LEGACY_SCHEDULING_EXTRACTOR,
     MULTI_SCHEDULING_EXTRACTOR,
+    SR_INTERVAL_REGEX,
+    SR_DUE_REGEX,
+    SR_EASE_REGEX
 } from "src/constants";
 import { escapeRegexString, cyrb53 } from "src/utils";
 import { ReviewDeck, ReviewDeckSelectionModal } from "src/review-deck";
@@ -562,29 +565,56 @@ export default class SRPlugin extends Plugin {
         const due = window.moment(now + interval * 24 * 3600 * 1000);
         const dueString: string = due.format("YYYY-MM-DD");
 
-        // TODO: update this to be per-value strings
-        // TODO: update to support replacement of geometric values... (negative doesn't register here)
         // check if scheduling info exists
-        if (SCHEDULING_INFO_REGEX.test(fileText)) {
-            const schedulingInfo = SCHEDULING_INFO_REGEX.exec(fileText);
+        if(SR_INTERVAL_REGEX.test(fileText))
+        {
+            const yaml_info = SR_INTERVAL_REGEX.exec(fileText);
             fileText = fileText.replace(
-                SCHEDULING_INFO_REGEX,
-                `---\n${schedulingInfo[1]}sr-due: ${dueString}\n` +
-                    `sr-interval: ${interval}\nsr-ease: ${ease}\n` +
-                    `${schedulingInfo[5]}---`,
+                SR_INTERVAL_REGEX,
+                `---\n${yaml_info[1]}sr-interval: ${interval}\n${yaml_info[3]}---`,
             );
-        } else if (YAML_FRONT_MATTER_REGEX.test(fileText)) {
-            // new note with existing YAML front matter
+        }
+        else
+        {
             const existingYaml = YAML_FRONT_MATTER_REGEX.exec(fileText);
             fileText = fileText.replace(
                 YAML_FRONT_MATTER_REGEX,
-                `---\n${existingYaml[1]}sr-due: ${dueString}\n` +
-                    `sr-interval: ${interval}\nsr-ease: ${ease}\n---`,
+                `---\n${existingYaml[1]}sr-interval: ${interval}\n---`,
             );
-        } else {
-            fileText =
-                `---\nsr-due: ${dueString}\nsr-interval: ${interval}\n` +
-                `sr-ease: ${ease}\n---\n\n${fileText}`;
+        }
+
+        if(SR_DUE_REGEX.test(fileText))
+        {
+            const yaml_info = SR_DUE_REGEX.exec(fileText);
+            fileText = fileText.replace(
+                SR_DUE_REGEX,
+                `---\n${yaml_info[1]}sr-due: ${dueString}\n${yaml_info[3]}---`,
+            );
+        }
+        else
+        {
+            const existingYaml = YAML_FRONT_MATTER_REGEX.exec(fileText);
+            fileText = fileText.replace(
+                YAML_FRONT_MATTER_REGEX,
+                `---\n${existingYaml[1]}sr-due: ${dueString}\n---`,
+            );
+        }
+
+        if(SR_EASE_REGEX.test(fileText))
+        {
+            const yaml_info = SR_EASE_REGEX.exec(fileText);
+            fileText = fileText.replace(
+                SR_EASE_REGEX,
+                `---\n${yaml_info[1]}sr-ease: ${ease}\n${yaml_info[3]}---`,
+            );
+        }
+        else
+        {
+            const existingYaml = YAML_FRONT_MATTER_REGEX.exec(fileText);
+            fileText = fileText.replace(
+                YAML_FRONT_MATTER_REGEX,
+                `---\n${existingYaml[1]}sr-ease: ${ease}\n---`,
+            );
         }
 
         if (this.data.settings.burySiblingCards) {
