@@ -25,6 +25,11 @@ If you want to run repo inside your vault, need to link after building:
 ```
 
 
+New "sr-type" attribute in front-matter:
+periodic: for periodic review
+geometric: for anti-srs note review with long spacings
+
+
 # Flashcard-Based and Note-Based Spaced Repetition Plugin
 
 <img src="https://img.shields.io/github/downloads/st3v3nmw/obsidian-spaced-repetition/total" /> <img src="https://img.shields.io/github/downloads/st3v3nmw/obsidian-spaced-repetition/latest/total?style=flat-square" /> <img src="https://img.shields.io/github/manifest-json/v/st3v3nmw/obsidian-spaced-repetition?style=flat-square" />

@@ -458,88 +458,86 @@ export default class SRPlugin extends Plugin {
         let fileText: string = await this.app.vault.read(note);
         let ease: number, interval: number, delayBeforeReview: number;
         const now: number = Date.now();
-        // new anti-srs note TODO redo this logic
-        if(
-            !Object.prototype.hasOwnProperty.call(frontmatter, "sr-due") &&
-            Object.prototype.hasOwnProperty.call(frontmatter, "sr-ease") &&
-            frontmatter["sr-ease"] < 0
-        ) {
-            console.log("Scheduling an anti-srs note for the first time\n");
-            interval = 1;
-            ease = frontmatter["sr-ease"];
-            delayBeforeReview = 0;
-            console.log("Ease: " + ease + "\n");
-            console.log("interval: " + interval + "\n");
-            console.log("delayBeforeReview: " + delayBeforeReview + "\n");
-        }
-        // new interval note TODO redo this logic
-        else if(
-            !Object.prototype.hasOwnProperty.call(frontmatter, "sr-due") &&
-            Object.prototype.hasOwnProperty.call(frontmatter, "sr-ease") &&
-            frontmatter["sr-ease"] == 0
-        ) {
-            console.log("Scheduling an interval note for the first time\n");
-            if(Object.prototype.hasOwnProperty.call(frontmatter, "sr-interval"))
-            {
-                interval = frontmatter["sr-interval"];
-            }
-            else
-            {
-                interval = 30;
-            }
-            ease = frontmatter["sr-ease"];
-            delayBeforeReview = 0;
-            console.log("Ease: " + ease + "\n");
-            console.log("interval: " + interval + "\n");
-            console.log("delayBeforeReview: " + delayBeforeReview + "\n");
-        }
-        // New normal note
-        else if (
+        // new note
+        if (
             !(
                 Object.prototype.hasOwnProperty.call(frontmatter, "sr-due") &&
                 Object.prototype.hasOwnProperty.call(frontmatter, "sr-interval") &&
                 Object.prototype.hasOwnProperty.call(frontmatter, "sr-ease")
             )
         ) {
-            let linkTotal = 0,
-                linkPGTotal = 0,
-                totalLinkCount = 0;
-
-            for (const statObj of this.incomingLinks[note.path] || []) {
-                const ease: number = this.easeByPath[statObj.sourcePath];
-                if (ease) {
-                    linkTotal += statObj.linkCount * this.pageranks[statObj.sourcePath] * ease;
-                    linkPGTotal += this.pageranks[statObj.sourcePath] * statObj.linkCount;
-                    totalLinkCount += statObj.linkCount;
+            console.log("Scheduling new note");
+            if(Object.prototype.hasOwnProperty.call(frontmatter, "sr-type"))
+            {
+                console.log("sr-type nonstandard");
+                let sr_type : string = frontmatter["sr-type"]
+                if(sr_type === "geometric")
+                {
+                    interval = 1;
+                    ease = -2.91;
+                    delayBeforeReview = 0;
+                }
+                else if(sr_type == "periodic")
+                {
+                    if(Object.prototype.hasOwnProperty.call(frontmatter, "sr-interval"))
+                    {
+                        interval = frontmatter["sr-interval"];
+                    }
+                    else
+                    {
+                        interval = 30;
+                    }
+                    ease = 0;
+                    delayBeforeReview = 0;
+                }
+                else
+                {
+                    new Notice("sr-type attribute can only be geometric or periodic");
+                    return;
                 }
             }
+            else
+            {
+                let linkTotal = 0,
+                    linkPGTotal = 0,
+                    totalLinkCount = 0;
 
-            const outgoingLinks = this.app.metadataCache.resolvedLinks[note.path] || {};
-            for (const linkedFilePath in outgoingLinks) {
-                const ease: number = this.easeByPath[linkedFilePath];
-                if (ease) {
-                    linkTotal +=
-                        outgoingLinks[linkedFilePath] * this.pageranks[linkedFilePath] * ease;
-                    linkPGTotal += this.pageranks[linkedFilePath] * outgoingLinks[linkedFilePath];
-                    totalLinkCount += outgoingLinks[linkedFilePath];
+                for (const statObj of this.incomingLinks[note.path] || []) {
+                    const ease: number = this.easeByPath[statObj.sourcePath];
+                    if (ease) {
+                        linkTotal += statObj.linkCount * this.pageranks[statObj.sourcePath] * ease;
+                        linkPGTotal += this.pageranks[statObj.sourcePath] * statObj.linkCount;
+                        totalLinkCount += statObj.linkCount;
+                    }
                 }
-            }
 
-            const linkContribution: number =
-                this.data.settings.maxLinkFactor *
-                Math.min(1.0, Math.log(totalLinkCount + 0.5) / Math.log(64));
-            ease =
-                (1.0 - linkContribution) * this.data.settings.baseEase +
-                (totalLinkCount > 0
-                    ? (linkContribution * linkTotal) / linkPGTotal
-                    : linkContribution * this.data.settings.baseEase);
-            // add note's average flashcard ease if available
-            if (Object.prototype.hasOwnProperty.call(this.easeByPath, note.path)) {
-                ease = (ease + this.easeByPath[note.path]) / 2;
+                const outgoingLinks = this.app.metadataCache.resolvedLinks[note.path] || {};
+                for (const linkedFilePath in outgoingLinks) {
+                    const ease: number = this.easeByPath[linkedFilePath];
+                    if (ease) {
+                        linkTotal +=
+                            outgoingLinks[linkedFilePath] * this.pageranks[linkedFilePath] * ease;
+                        linkPGTotal += this.pageranks[linkedFilePath] * outgoingLinks[linkedFilePath];
+                        totalLinkCount += outgoingLinks[linkedFilePath];
+                    }
+                }
+
+                const linkContribution: number =
+                    this.data.settings.maxLinkFactor *
+                    Math.min(1.0, Math.log(totalLinkCount + 0.5) / Math.log(64));
+                ease =
+                    (1.0 - linkContribution) * this.data.settings.baseEase +
+                    (totalLinkCount > 0
+                        ? (linkContribution * linkTotal) / linkPGTotal
+                        : linkContribution * this.data.settings.baseEase);
+                // add note's average flashcard ease if available
+                if (Object.prototype.hasOwnProperty.call(this.easeByPath, note.path)) {
+                    ease = (ease + this.easeByPath[note.path]) / 2;
+                }
+                ease = Math.round(ease);
+                interval = 1.0;
+                delayBeforeReview = 0;
             }
-            ease = Math.round(ease);
-            interval = 1.0;
-            delayBeforeReview = 0;
         } else {
             interval = frontmatter["sr-interval"];
             ease = frontmatter["sr-ease"];
@@ -549,11 +547,6 @@ export default class SRPlugin extends Plugin {
                     .moment(frontmatter["sr-due"], ["YYYY-MM-DD", "DD-MM-YYYY", "ddd MMM DD YYYY"])
                     .valueOf();
         }
-
-        console.log("Calling schedule\n");
-        console.log("Ease: " + ease + "\n");
-            console.log("interval: " + interval + "\n");
-            console.log("delayBeforeReview: " + delayBeforeReview + "\n");
 
         const schedObj: Record<string, number> = schedule(
             response,
@@ -569,8 +562,8 @@ export default class SRPlugin extends Plugin {
         const due = window.moment(now + interval * 24 * 3600 * 1000);
         const dueString: string = due.format("YYYY-MM-DD");
 
-        // TODO: adjust for initial partial YAML
-        // OR DO THIS BETTER: PIECEWISE UPDATE (e.g., replace due, then interval, then ease)
+        // TODO: update this to be per-value strings
+        // TODO: update to support replacement of geometric values... (negative doesn't register here)
         // check if scheduling info exists
         if (SCHEDULING_INFO_REGEX.test(fileText)) {
             const schedulingInfo = SCHEDULING_INFO_REGEX.exec(fileText);
