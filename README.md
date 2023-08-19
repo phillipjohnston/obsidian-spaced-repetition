@@ -29,6 +29,17 @@ New "sr-type" attribute in front-matter:
 periodic: for periodic review
 geometric: for anti-srs note review with long spacings
 
+You can specify a custom geometric ease for initial scheduling even with:
+sr-ease: -x, where x is your geometric ratio (must be negative for geometric scheduling)
+
+You can specify a custom interval for periodic note with:
+sr-interval: x, where x is your interval.
+
+```
+sr-type: periodic
+sr-interval: 15
+```
+
 
 # Flashcard-Based and Note-Based Spaced Repetition Plugin
 
