@@ -8,6 +8,10 @@
 # npm
 node_modules
 
+# Generated files
+data.json
+main.js
+
 # yarn
 yarn-error.log
 .pnp.*
