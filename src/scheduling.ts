@@ -147,8 +147,14 @@ export function schedule(
         }
         else
         {
-            // remember, ease is marked negative...
-           interval =  Math.floor((interval + delayBeforeReview) * (-1 * ease));
+            // The -1 multiplication is because ease is marked negative to
+            // indicate a geometric progression.
+            //
+            // delayBeforeReview was removed from this calculation.
+            // We DON'T want to incorporate delay before review
+            // because we just want the interval to progress normally, rather than
+            // increasing because there was a small delay in reviewing.
+           interval =  Math.floor((interval) * (-1 * ease));
         }
     }
 
