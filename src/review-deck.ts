@@ -21,12 +21,27 @@ export class ReviewDeck {
             (a: TFile, b: TFile) => (pageranks[b.path] || 0) - (pageranks[a.path] || 0),
         );
 
-        // sort scheduled notes by date & within those days, sort them by importance
+        // sort scheduled notes by date & within those days, sort them by TYPE and age (older first)
         this.scheduledNotes = this.scheduledNotes.sort((a: SchedNote, b: SchedNote) => {
+            // First by due date
             const result = a.dueUnix - b.dueUnix;
             if (result != 0) {
                 return result;
             }
+
+            // First by ease
+            if(a.ease != b.ease)
+            {
+                return a.ease - b.ease;
+            }
+
+            // Then by interval
+            if(a.interval != b.interval)
+            {
+                return b.interval - a.interval;
+            }
+
+            // Then by pagerank
             return (pageranks[b.note.path] || 0) - (pageranks[a.note.path] || 0);
         });
     }

@@ -49,6 +49,8 @@ const DEFAULT_DATA: PluginData = {
 export interface SchedNote {
     note: TFile;
     dueUnix: number;
+    ease: number;
+    interval: number;
 }
 
 export interface LinkStat {
@@ -370,8 +372,11 @@ export default class SRPlugin extends Plugin {
                 .moment(frontmatter["sr-due"], ["YYYY-MM-DD", "DD-MM-YYYY", "ddd MMM DD YYYY"])
                 .valueOf();
 
+            const ease: number = frontmatter["sr-ease"];
+            const interval: number = frontmatter["sr-interval"];
+
             for (const matchedNoteTag of matchedNoteTags) {
-                this.reviewDecks[matchedNoteTag].scheduledNotes.push({ note, dueUnix });
+                this.reviewDecks[matchedNoteTag].scheduledNotes.push({ note, dueUnix, ease, interval});
                 if (dueUnix <= now.valueOf()) {
                     this.reviewDecks[matchedNoteTag].dueNotesCount++;
                 }
