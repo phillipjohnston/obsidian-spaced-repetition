@@ -41,8 +41,7 @@ export default {
     REVIEW_ALL_CARDS: "Повторить все карточки во всех заметках",
     REVIEW_CARDS_IN_NOTE: "Повторить карточки в этой заметке",
     CRAM_CARDS_IN_NOTE: "Зубрить карточки в этой заметке",
-    VIEW_STATS: "Посмотреть статистику",
-    STATUS_BAR:
+STATUS_BAR:
         "Повторить: ${dueNotesCount} заметок(-ки), ${dueFlashcardsCount} карточек(-ки) предстоит",
     SYNC_TIME_TAKEN: "Синхронизация заняла ${t}мс",
     NOTE_IN_IGNORED_FOLDER: "Заметка сохранена в игнорируемую папку (см. настройки).",
@@ -153,29 +152,4 @@ export default {
     YESTERDAY: "Вчерашние",
     TODAY: "Сегодняшние",
     TOMORROW: "Завтрашние",
-
-    // stats-modal.tsx
-    STATS_TITLE: "Статистика",
-    MONTH: "Месяц",
-    QUARTER: "Четверть",
-    YEAR: "Год",
-    LIFETIME: "Всё время",
-    FORECAST: "Прогноз",
-    FORECAST_DESC: "Количество карточек предстоящих в будущем",
-    SCHEDULED: "Запланировано",
-    DAYS: "Дней",
-    NUMBER_OF_CARDS: "Количество карточек",
-    REVIEWS_PER_DAY: "Среднее количество: ${avg} повторений в день", //!!!
-    INTERVALS: "Интервалы",
-    INTERVALS_DESC: "Промежутки времени до следующего показа карточек во время повторения",
-    COUNT: "Количество",
-    INTERVALS_SUMMARY: "Средний промежуток: ${avg}, Самый длинный промежуток: ${longest}",
-    EASES: "Лёгкость (параметр в алгоритме, который влияет на приоритет и время показа карточек) \n (от англ. ease, см. настройки алгоритма)",
-    EASES_SUMMARY: "Среднее количество Лёгкости: ${avgEase}",
-    CARD_TYPES: "Типы карточек",
-    CARD_TYPES_DESC: "Включая спрятанные карточки, если такие существуют.",
-    CARD_TYPE_NEW: "Новых",
-    CARD_TYPE_YOUNG: "Молодых",
-    CARD_TYPE_MATURE: "Взрослых",
-    CARD_TYPES_SUMMARY: "Всего карточек: ${totalCardsCount}",
 };

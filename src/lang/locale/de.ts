@@ -38,8 +38,7 @@ export default {
     CRAM_ALL_CARDS: "Select a deck to cram",
     REVIEW_CARDS_IN_NOTE: "Lernkarten in dieser Notiz wiederholen",
     CRAM_CARDS_IN_NOTE: "Lernkarten in dieser Notiz pauken.",
-    VIEW_STATS: "Statistiken anzeigen",
-    STATUS_BAR:
+STATUS_BAR:
         "Wiederholung: ${dueNotesCount} Notiz(en), ${dueFlashcardsCount} Karte(n) anstehend",
     SYNC_TIME_TAKEN: "Sync dauerte ${t}ms",
     NOTE_IN_IGNORED_FOLDER:
@@ -153,29 +152,4 @@ export default {
     YESTERDAY: "Gestern",
     TODAY: "Heute",
     TOMORROW: "Morgen",
-
-    // stats-modal.tsx
-    STATS_TITLE: "Statistiken",
-    MONTH: "Month",
-    QUARTER: "Quarter",
-    YEAR: "Year",
-    LIFETIME: "Lifetime",
-    FORECAST: "Prognose",
-    FORECAST_DESC: "Anzahl der künftig anstehenden Karten",
-    SCHEDULED: "Anstehend",
-    DAYS: "Tage",
-    NUMBER_OF_CARDS: "Anzahl der Karten",
-    REVIEWS_PER_DAY: "Durchschnitt: ${avg} Wiederholungen/Tag",
-    INTERVALS: "Intervalle",
-    INTERVALS_DESC: "Intervalle bis Wiederholungen anstehen",
-    COUNT: "Anzahl",
-    INTERVALS_SUMMARY: "Durchschnittliches Intervall: ${avg}, Längstes Intervall: ${longest}",
-    EASES: "Einfachheit",
-    EASES_SUMMARY: "Durchschnittliche Einfachheit: ${avgEase}",
-    CARD_TYPES: "Kategorisierung",
-    CARD_TYPES_DESC: "Verlegte Karten eingeschlossen",
-    CARD_TYPE_NEW: "Neu",
-    CARD_TYPE_YOUNG: "Jung",
-    CARD_TYPE_MATURE: "Ausgereift",
-    CARD_TYPES_SUMMARY: "Insgesamt ${totalCardsCount} Karten",
 };

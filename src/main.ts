@@ -11,7 +11,6 @@ import * as graph from "pagerank.js";
 
 import { SRSettingTab, SRSettings, DEFAULT_SETTINGS } from "src/settings";
 import { FlashcardModal, Deck } from "src/flashcard-modal";
-import { StatsModal, Stats } from "src/stats-modal";
 import { ReviewQueueListView, REVIEW_QUEUE_VIEW_TYPE } from "src/sidebar";
 import { Card, CardType, ReviewResponse, schedule } from "src/scheduling";
 import {
@@ -77,7 +76,6 @@ export default class SRPlugin extends Plugin {
 
     public deckTree: Deck = new Deck("root", null);
     public dueDatesFlashcards: Record<number, number> = {}; // Record<# of days in future, due count>
-    public cardStats: Stats;
 
     async onload(): Promise<void> {
         await this.loadPluginData();
@@ -226,17 +224,6 @@ export default class SRPlugin extends Plugin {
             },
         });
 
-        this.addCommand({
-            id: "srs-view-stats",
-            name: t("VIEW_STATS"),
-            callback: async () => {
-                if (!this.syncLock) {
-                    await this.sync();
-                    new StatsModal(this.app, this).open();
-                }
-            },
-        });
-
         this.addSettingTab(new SRSettingTab(this.app, this));
 
         this.app.workspace.onLayoutReady(() => {
@@ -271,13 +258,6 @@ export default class SRPlugin extends Plugin {
         // reset flashcards stuff
         this.deckTree = new Deck("root", null);
         this.dueDatesFlashcards = {};
-        this.cardStats = {
-            eases: {},
-            intervals: {},
-            newCount: 0,
-            youngCount: 0,
-            matureCount: 0,
-        };
 
         const now = window.moment(Date.now());
         const todayDate: string = now.format("YYYY-MM-DD");
@@ -880,7 +860,6 @@ export default class SRPlugin extends Plugin {
 
                 // card scheduled
                 if (ignoreStats) {
-                    this.cardStats.newCount++;
                     cardObj.isDue = true;
                     this.deckTree.insertFlashcard([...deckPath], cardObj);
                 } else if (i < scheduling.length) {
@@ -895,22 +874,8 @@ export default class SRPlugin extends Plugin {
 
                     const interval: number = parseInt(scheduling[i][2]),
                         ease: number = parseInt(scheduling[i][3]);
-                    if (!Object.prototype.hasOwnProperty.call(this.cardStats.intervals, interval)) {
-                        this.cardStats.intervals[interval] = 0;
-                    }
-                    this.cardStats.intervals[interval]++;
-                    if (!Object.prototype.hasOwnProperty.call(this.cardStats.eases, ease)) {
-                        this.cardStats.eases[ease] = 0;
-                    }
-                    this.cardStats.eases[ease]++;
                     totalNoteEase += ease;
                     scheduledCount++;
-
-                    if (interval >= 32) {
-                        this.cardStats.matureCount++;
-                    } else {
-                        this.cardStats.youngCount++;
-                    }
 
                     if (this.data.buryList.includes(cardTextHash)) {
                         this.deckTree.countFlashcard([...deckPath]);
@@ -927,7 +892,6 @@ export default class SRPlugin extends Plugin {
                         continue;
                     }
                 } else {
-                    this.cardStats.newCount++;
                     if (this.data.buryList.includes(cyrb53(cardText))) {
                         this.deckTree.countFlashcard([...deckPath]);
                         continue;
