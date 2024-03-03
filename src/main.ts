@@ -1,3 +1,8 @@
+// TODO:
+// - remove flashcard references
+// - remove bury date
+// - remove pageranks
+
 import {
     Notice,
     Plugin,
@@ -265,17 +270,8 @@ export default class SRPlugin extends Plugin {
         this.dueDatesNotes = {};
         this.reviewDecks = {};
 
-        // reset flashcards stuff
-        this.deckTree = new Deck("root", null);
-        this.dueDatesFlashcards = {};
-
         const now = window.moment(Date.now());
         const todayDate: string = now.format("YYYY-MM-DD");
-        // clear bury list if we've changed dates
-        if (todayDate !== this.data.buryDate) {
-            this.data.buryDate = todayDate;
-            this.data.buryList = [];
-        }
 
         const notes: TFile[] = this.app.vault.getMarkdownFiles();
         for (const note of notes) {
@@ -464,10 +460,8 @@ export default class SRPlugin extends Plugin {
                 Object.prototype.hasOwnProperty.call(frontmatter, "sr-ease")
             )
         ) {
-            console.log("Scheduling new note");
             if(Object.prototype.hasOwnProperty.call(frontmatter, "sr-type"))
             {
-                console.log("sr-type nonstandard");
                 let sr_type : string = frontmatter["sr-type"]
                 if(sr_type === "geometric")
                 {
@@ -553,8 +547,9 @@ export default class SRPlugin extends Plugin {
 
             // Note that if you set interval here, you override interval in the
             // note, which is not what we want
-            const postpone_interval = 15 + (Math.round(Math.random() * 10 - 5))
+            const postpone_interval = 10 + (Math.round(Math.random() * 10 - 5))
             var due = window.moment(now + postpone_interval * 24 * 3600 * 1000);
+            console.log("Postponing for " + postpone_interval + " days");
         }
         else
         {
@@ -631,14 +626,15 @@ export default class SRPlugin extends Plugin {
 
         await this.sync();
         if (this.data.settings.autoNextNote) {
-            this.reviewNextNote(this.lastSelectedReviewDeck);
+            // This is a workaround, which ideally I will remove
+            await this.reviewNextNote(this.lastSelectedReviewDeck, 1);
         }
     }
 
     async reviewNextNoteModal(): Promise<void> {
         const reviewDeckNames: string[] = Object.keys(this.reviewDecks);
         if (reviewDeckNames.length === 1) {
-            this.reviewNextNote(reviewDeckNames[0]);
+            this.reviewNextNote(reviewDeckNames[0], 0);
         } else {
             const deckSelectionModal = new ReviewDeckSelectionModal(this.app, reviewDeckNames);
             deckSelectionModal.submitCallback = (deckKey: string) => this.reviewNextNote(deckKey);
@@ -646,7 +642,7 @@ export default class SRPlugin extends Plugin {
         }
     }
 
-    async reviewNextNote(deckKey: string): Promise<void> {
+    async reviewNextNote(deckKey: string, indexOffset: int): Promise<void> {
         if (!Object.prototype.hasOwnProperty.call(this.reviewDecks, deckKey)) {
             new Notice(t("NO_DECK_EXISTS", { deckName: deckKey }));
             return;
@@ -658,7 +654,8 @@ export default class SRPlugin extends Plugin {
         if (deck.dueNotesCount > 0) {
             const index = this.data.settings.openRandomNote
                 ? Math.floor(Math.random() * deck.dueNotesCount)
-                : 0;
+                : 0 + indexOffset;
+            //console.log("Attempting next note open: due notes, index: " + index + ", note: " + deck.scheduledNotes[index].note.basename);
             await this.app.workspace.getLeaf().openFile(deck.scheduledNotes[index].note);
             return;
         }
@@ -666,8 +663,8 @@ export default class SRPlugin extends Plugin {
         if (deck.newNotes.length > 0) {
             const index = this.data.settings.openRandomNote
                 ? Math.floor(Math.random() * deck.newNotes.length)
-                : 0;
-            this.app.workspace.getLeaf().openFile(deck.newNotes[index]);
+                : 0 + indexOffset;
+            await this.app.workspace.getLeaf().openFile(deck.newNotes[index]);
             return;
         }
 
