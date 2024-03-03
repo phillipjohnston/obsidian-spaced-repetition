@@ -31,6 +31,7 @@ export default {
     REVIEW_NOTE_EASY_CMD: "Review note as easy",
     REVIEW_NOTE_GOOD_CMD: "Review note as good",
     REVIEW_NOTE_HARD_CMD: "Review note as hard",
+    POSTPONE_NOTE_CMD: "Postpone note review",
     CRAM_ALL_CARDS: "Select a deck to cram",
     REVIEW_ALL_CARDS: "Review flashcards from all notes",
     REVIEW_CARDS_IN_NOTE: "Review flashcards in this note",

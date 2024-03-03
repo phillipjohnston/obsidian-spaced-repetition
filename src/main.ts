@@ -144,6 +144,17 @@ export default class SRPlugin extends Plugin {
         });
 
         this.addCommand({
+            id: 'srs-note-review-postpone',
+            name: t("POSTPONE_NOTE_CMD"),
+            callback: () => {
+                const openFile: TFile | null = this.app.workspace.getActiveFile();
+                if (openFile && openFile.extension === "md") {
+                    this.saveReviewResponse(openFile, ReviewResponse.Postpone);
+                }
+            },
+        })
+
+        this.addCommand({
             id: "srs-note-review-easy",
             name: t("REVIEW_NOTE_EASY_CMD"),
             callback: () => {
@@ -536,18 +547,31 @@ export default class SRPlugin extends Plugin {
                     .valueOf();
         }
 
-        const schedObj: Record<string, number> = schedule(
-            response,
-            interval,
-            ease,
-            delayBeforeReview,
-            this.data.settings,
-            this.dueDatesNotes,
-        );
-        interval = schedObj.interval;
-        ease = schedObj.ease;
+        if(response == ReviewResponse.Postpone)
+        {
+            // This injects jitter into the rescheduling process, so that you
+            // don't postpone every card onto the same day
 
-        const due = window.moment(now + interval * 24 * 3600 * 1000);
+            // Note that if you set interval here, you override interval in the
+            // note, which is not what we want
+            const postpone_interval = 15 + (Math.round(Math.random() * 10 - 5))
+            var due = window.moment(now + postpone_interval * 24 * 3600 * 1000);
+        }
+        else
+        {
+            const schedObj: Record<string, number> = schedule(
+                response,
+                interval,
+                ease,
+                delayBeforeReview,
+                this.data.settings,
+                this.dueDatesNotes,
+            );
+            interval = schedObj.interval;
+            ease = schedObj.ease;
+            var due = window.moment(now + interval * 24 * 3600 * 1000);
+        }
+
         const dueString: string = due.format("YYYY-MM-DD");
 
         // check if scheduling info exists
@@ -602,10 +626,6 @@ export default class SRPlugin extends Plugin {
             );
         }
 
-        if (this.data.settings.burySiblingCards) {
-            await this.findFlashcardsInNote(note, [], true); // bury all cards in current note
-            await this.savePluginData();
-        }
         await this.app.vault.modify(note, fileText);
 
         new Notice(t("RESPONSE_RECEIVED"));
