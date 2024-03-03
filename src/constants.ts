@@ -1,5 +1,3 @@
-export const SCHEDULING_INFO_REGEX =
-    /^---\n((?:.*\n)*)sr-due: (.+)\nsr-interval: (\d+)\nsr-ease: ([-\d\.]+)\n((?:.*\n)?)---/;
 export const SR_DUE_REGEX =
     /^---\n((?:.*\n)*)sr-due: (.+)\n((?:.*\n)*?)---/;
 export const SR_INTERVAL_REGEX =

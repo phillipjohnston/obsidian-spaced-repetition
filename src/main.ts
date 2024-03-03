@@ -15,7 +15,6 @@ import { ReviewQueueListView, REVIEW_QUEUE_VIEW_TYPE } from "src/sidebar";
 import { Card, CardType, ReviewResponse, schedule } from "src/scheduling";
 import {
     YAML_FRONT_MATTER_REGEX,
-    SCHEDULING_INFO_REGEX,
     LEGACY_SCHEDULING_EXTRACTOR,
     MULTI_SCHEDULING_EXTRACTOR,
     SR_INTERVAL_REGEX,
