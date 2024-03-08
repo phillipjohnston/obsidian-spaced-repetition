@@ -156,11 +156,6 @@ export function schedule(
             // because we just want the interval to progress normally, rather than
             // increasing because there was a small delay in reviewing.
            interval =  Math.floor((interval) * (-1 * ease));
-
-           // We want to inject some random jitter into the interval to
-           // avoid sibling notes always being reviewed on the exact same day
-           // This gives us reasonable [-2,2] variation
-           interval = interval + (Math.round(Math.random() * 4 - 2))
         }
     }
 

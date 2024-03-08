@@ -449,6 +449,8 @@ export default class SRPlugin extends Plugin {
             return;
         }
 
+        let noteIsNew = false;
+
         let fileText: string = await this.app.vault.read(note);
         let ease: number, interval: number, delayBeforeReview: number;
         const now: number = Date.now();
@@ -460,6 +462,7 @@ export default class SRPlugin extends Plugin {
                 Object.prototype.hasOwnProperty.call(frontmatter, "sr-ease")
             )
         ) {
+            noteIsNew = true;
             if(Object.prototype.hasOwnProperty.call(frontmatter, "sr-type"))
             {
                 let sr_type : string = frontmatter["sr-type"]
@@ -547,7 +550,8 @@ export default class SRPlugin extends Plugin {
 
             // Note that if you set interval here, you override interval in the
             // note, which is not what we want
-            const postpone_interval = 10 + (Math.round(Math.random() * 10 - 5))
+            const postponeWindow = 5; // [-5,5 variation around postpone date]
+            const postpone_interval = 10 + (Math.round(Math.random() * (2 * postpone_interval) - postpone_interval));
             var due = window.moment(now + postpone_interval * 24 * 3600 * 1000);
             console.log("Postponing for " + postpone_interval + " days");
         }
@@ -563,7 +567,33 @@ export default class SRPlugin extends Plugin {
             );
             interval = schedObj.interval;
             ease = schedObj.ease;
-            var due = window.moment(now + interval * 24 * 3600 * 1000);
+
+            let intervalWithJitter = interval;
+
+            // Add some jitter for initially scheduled notes and always for geometric
+            // notes so that we don't get them all stacked up at once. E.g.,
+            // geometric notes in particular are particularly prone to being stacked up
+            // as they will progress on the same sequence.
+            if(noteIsNew || ease < 0)
+            {
+                let variationWindow = 5; // [0,5] variation around the actual
+                                           // due date.
+                if(ease < 0)
+                {
+                    // for now, doubling the variation window for geometric notes
+                    variationWindow *= 2;
+                }
+
+                let jitter = Math.round(Math.random() * variationWindow);
+
+                //console.log("Adding jitter to note schedule: " + jitter);
+
+                intervalWithJitter = interval + jitter;
+            }
+
+            // Note that we're scheduling due date with the potentially jittered
+            // interval, without impacting the actual interval itself.
+            var due = window.moment(now + intervalWithJitter * 24 * 3600 * 1000);
         }
 
         const dueString: string = due.format("YYYY-MM-DD");
