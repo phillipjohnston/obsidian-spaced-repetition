@@ -1,6 +1,4 @@
 import { App, Modal, TFile, Setting } from "obsidian";
-
-import ReviewDeck from "src/review-deck";
 import { ReviewDeck, NoteTypes, SchedNote } from "src/review-deck";
 import { SR_DUE_REGEX } from "src/constants";
 
