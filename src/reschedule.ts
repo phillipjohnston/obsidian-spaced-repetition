@@ -2,6 +2,7 @@ import { App, Modal, TFile, Setting } from "obsidian";
 
 import ReviewDeck from "src/review-deck";
 import { ReviewDeck, NoteTypes, SchedNote } from "src/review-deck";
+import { SR_DUE_REGEX } from "src/constants";
 
 // TODO: reschedule future weekend due dates
 // TODO: reschdule what's due today (workaround: just wait until past due)
@@ -94,9 +95,31 @@ function findPastDueCount(deck: ReviewDeck, todayUnixTimestamp: number): number
     return pastDue;
 }
 
-function rewrite_due_date(note: SchedNote, newDate: Date)
+function formatDate(date : Date) : string
+{
+  let year = date.getFullYear();
+  // Months are 0-based, so we add 1
+  let month = (1 + date.getMonth()).toString().padStart(2, '0');
+  let day = date.getDate().toString().padStart(2, '0');
+
+  return year + '-' + month + '-' + day;
+}
+
+async function rewrite_due_date(note: SchedNote, newDate: Date)
 {
     note.dueUnix = newDate.getTime();
+    const dueString: string = formatDate(newDate);
+
+    let fileText: string = await this.app.vault.read(note.note);
+
+    const yaml_info = SR_DUE_REGEX.exec(fileText);
+    fileText = fileText.replace(
+        SR_DUE_REGEX,
+        `---\n${yaml_info[1]}sr-due: ${dueString}\n${yaml_info[3]}---`,
+    );
+
+    await this.app.vault.modify(note.note, fileText);
+
     console.log("Rescheduled note " + note.note.path + " to " + newDate);
 }
 
@@ -125,7 +148,8 @@ function rescheduleNotes(deckList: ReviewDeck[],
     }
     else
     {
-        keys = deck;
+        // Needs to be an array so the for loop works below.
+        keys = [deck];
     }
 
     console.log("[Reschedule] Selected deck keys: " + keys);
@@ -141,7 +165,7 @@ function rescheduleNotes(deckList: ReviewDeck[],
         // This algorithm assumes a sorted deck list. We will iterate
         // through each scheduled note and reschedule it, but as soon as we
         // hit a note that matches today, we will stop the process.
-
+        console.log("Processing deck: " + key);
         let deck = deckList[key];
         let pastDueCount = findPastDueCount(deck, todayUnix);
         console.log("Deck " + key + " has " + pastDueCount + " past due notes.");
@@ -184,6 +208,10 @@ function rescheduleNotes(deckList: ReviewDeck[],
         {
             let newDate = rescheduleDate(today, dateDelta, includeWeekends);
             rewrite_due_date(deck.scheduledNotes[i], newDate);
+
+            // This saves us needing to update in another way
+            deck.dueNotesCount--;
+
             // Now we do the other math for tracking increments
             addedPerDay++;
             if(addedPerDay == reschedulePerDayTarget)
@@ -200,13 +228,10 @@ function rescheduleNotes(deckList: ReviewDeck[],
             }
         }
 
-        // TODO: uncomment
         // Now that things are rescheduled, we need to update our
-        // deck information
-        //deckList[key].sortNotes();
-        //deckList[key].currentIndex = 0;
-        // TODO: What about dueNotesCount? Probably needs a supporting function
-        // pulled out of sync().
+        // deck information - no sync needed now.
+        deckList[key].sortNotes();
+        deckList[key].currentIndex = 0;
     }
 
     console.log("Rescheduling complete.");
