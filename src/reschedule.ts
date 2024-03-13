@@ -3,6 +3,10 @@ import { App, Modal, TFile, Setting } from "obsidian";
 import ReviewDeck from "src/review-deck";
 import { ReviewDeck, NoteTypes, SchedNote } from "src/review-deck";
 
+// TODO: reschedule future weekend due dates
+// TODO: reschdule what's due today (workaround: just wait until past due)
+// TODO: balance due in the future
+
 /* Notes
         const now = window.moment(Date.now());
         const todayDate: string = now.format("YYYY-MM-DD");
@@ -18,15 +22,52 @@ import { ReviewDeck, NoteTypes, SchedNote } from "src/review-deck";
             if (dueUnix <= now.valueOf()) {
                 this.dueNotesCount++;
             }
+
+        if(SR_DUE_REGEX.test(fileText))
+        {
+            const yaml_info = SR_DUE_REGEX.exec(fileText);
+            fileText = fileText.replace(
+                SR_DUE_REGEX,
+                `---\n${yaml_info[1]}sr-due: ${dueString}\n${yaml_info[3]}---`,
+            );
+        }
 */
 
 // TODO: this needs to be somewhere else and imported
 // because we could use this elsewhere
 
-
-function addDaysToUnixTimestamp(unixTimestamp: number, days: number): number
+function incrementDay(date: Date): Date
 {
-    return unixTimestamp + days * 24 * 3600 * 1000;
+    return new Date(date.getTime() + (24 * 3600 * 1000));
+}
+
+function addDays(date: Date, days: number): Date
+{
+    return new Date(date.getTime() + (days * 24 * 3600 * 1000));
+}
+
+// TODO: Surely this could be smarter, but it works for now
+function rescheduleDate(date: Date, days: number, includeWeekends: boolean): Date
+{
+if (includeWeekends)
+    {
+        return addDays(date, days);
+    }
+    else
+    {
+        let days_rem = days;
+        while(days_rem)
+        {
+            date = incrementDay(date);
+            let day = date.getDay();
+            if(day != 0 && day != 6)
+            {
+                days_rem--;
+            }
+        }
+
+        return date;
+    }
 }
 
 function findPastDueCount(deck: ReviewDeck, todayUnixTimestamp: number): number
@@ -53,11 +94,17 @@ function findPastDueCount(deck: ReviewDeck, todayUnixTimestamp: number): number
     return pastDue;
 }
 
+function rewrite_due_date(note: SchedNote, newDate: Date)
+{
+    note.dueUnix = newDate.getTime();
+    console.log("Rescheduled note " + note.note.path + " to " + newDate);
+}
+
 function rescheduleNotes(deckList: ReviewDeck[],
     deck: ReviewDeck,
     noteType: int,
     days: int,
-    includeWeekends: bool)
+    includeWeekends: boolean)
 {
     console.log("[Reschedule] Request submitted with deck: " + deck  +
                 " rescheduleDays: " + days +
@@ -108,7 +155,10 @@ function rescheduleNotes(deckList: ReviewDeck[],
             // Populate validIndices with a count from 0 to pastDueCount - 1
             for(let i = 0; i < pastDueCount; i++)
             {
-                validIndices.push(i);
+                if(deck.scheduledNotes[i].rebalance)
+                {
+                    validIndices.push(i);
+                }
             }
         }
         else
@@ -117,7 +167,7 @@ function rescheduleNotes(deckList: ReviewDeck[],
             for(let i = 0; i < pastDueCount; i++)
             {
                 let note = deck.scheduledNotes[i];
-                if(note.noteType == noteType)
+                if(note.noteType == noteType && note.rebalance)
                 {
                     validIndices.push(i);
                 }
@@ -126,6 +176,29 @@ function rescheduleNotes(deckList: ReviewDeck[],
 
         console.log("Past due count after filtering by note type: " + validIndices.length);
 
+        let reschedulePerDayTarget = Math.floor(validIndices.length / days);
+        let dateDelta = 1;
+        let addedPerDay = 0;
+
+        for(let i of validIndices)
+        {
+            let newDate = rescheduleDate(today, dateDelta, includeWeekends);
+            rewrite_due_date(deck.scheduledNotes[i], newDate);
+            // Now we do the other math for tracking increments
+            addedPerDay++;
+            if(addedPerDay == reschedulePerDayTarget)
+            {
+                dateDelta++;
+                addedPerDay = 0;
+                if(dateDelta > days)
+                {
+                    // This will happen because of rounding being cut off.
+                    // So we'll increment one per day
+                    reschedulePerDayTarget = 1
+                    dateDelta = 1; // wrap back around
+                }
+            }
+        }
 
         // TODO: uncomment
         // Now that things are rescheduled, we need to update our
@@ -137,12 +210,13 @@ function rescheduleNotes(deckList: ReviewDeck[],
     }
 
     console.log("Rescheduling complete.");
+    console.log(`SR: Decks post reschedule`, deckList);
 }
 
 export class RescheduleBacklogModal extends Modal {
   rescheduleDays: int;
   rescheduleNoteType: NoteTypes;
-  rescheduleIncludesWeekends: bool;
+  rescheduleIncludesWeekends: boolean;
   rescheduleDeck: string;
   deckKeys: string[];
   deckList: ReviewDeck[];
@@ -204,7 +278,9 @@ export class RescheduleBacklogModal extends Modal {
             dropDown.addOption(true, "Yes");
             dropDown.addOption(false, "No");
             dropDown.onChange((value) => {
-                this.rescheduleIncludesWeekends = value;
+                // This is converting to a string, even though I'm using
+                // a bool type. So we convert back to a bool.
+                this.rescheduleIncludesWeekends = value === "true";
             })
         });
 
