@@ -1,7 +1,13 @@
 import { App, FuzzySuggestModal, TFile } from "obsidian";
 
-import { SchedNote } from "src/main";
 import { t } from "src/lang/helpers";
+
+export interface SchedNote {
+    note: TFile;
+    dueUnix: number;
+    ease: number;
+    interval: number;
+}
 
 export class ReviewDeck {
     public deckName: string;

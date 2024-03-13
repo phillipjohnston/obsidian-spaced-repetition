@@ -24,7 +24,7 @@ import {
     SR_EASE_REGEX
 } from "src/constants";
 import { escapeRegexString } from "src/utils";
-import { ReviewDeck, ReviewDeckSelectionModal } from "src/review-deck";
+import { ReviewDeck, ReviewDeckSelectionModal, SchedNote } from "src/review-deck";
 import { RescheduleBacklogModal } from "src/reschedule";
 import { t } from "src/lang/helpers";
 import { parse } from "src/parser";
@@ -39,13 +39,6 @@ const DEFAULT_DATA: PluginData = {
     settings: DEFAULT_SETTINGS,
     historyDeck: null,
 };
-
-export interface SchedNote {
-    note: TFile;
-    dueUnix: number;
-    ease: number;
-    interval: number;
-}
 
 export interface LinkStat {
     sourcePath: string;
