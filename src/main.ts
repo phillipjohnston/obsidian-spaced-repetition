@@ -719,25 +719,3 @@ export default class SRPlugin extends Plugin {
         }
     }
 }
-
-function getCardContext(cardLine: number, headings: HeadingCache[], note_title: string): string {
-    const stack: HeadingCache[] = [];
-    for (const heading of headings) {
-        if (heading.position.start.line > cardLine) {
-            break;
-        }
-
-        while (stack.length > 0 && stack[stack.length - 1].level >= heading.level) {
-            stack.pop();
-        }
-
-        stack.push(heading);
-    }
-
-    let context = `${note_title} > `;
-    for (const headingObj of stack) {
-        headingObj.heading = headingObj.heading.replace(/\[\^\d+\]/gm, "").trim();
-        context += `${headingObj.heading} > `;
-    }
-    return context.slice(0, -3);
-}
