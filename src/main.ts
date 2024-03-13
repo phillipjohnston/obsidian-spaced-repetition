@@ -2,6 +2,10 @@
 // - remove flashcard references
 // - remove bury date
 // - remove pageranks
+// - remove deckTree - not needed
+// - reduce the number of syncs and sorts - how can I keep the current deck,
+//  an index into the array, and then only resort when changing decks or exausting
+//  all new notes?
 
 import {
     Notice,
@@ -329,6 +333,7 @@ export default class SRPlugin extends Plugin {
             for (const tagToReview of this.data.settings.tagsToReview) {
                 if (tags.some((tag) => tag === tagToReview || tag.startsWith(tagToReview + "/"))) {
                     if (!Object.prototype.hasOwnProperty.call(this.reviewDecks, tagToReview)) {
+                        console.log("Creating new deck for tag: " + tagToReview);
                         this.reviewDecks[tagToReview] = new ReviewDeck(tagToReview);
                     }
                     matchedNoteTags.push(tagToReview);
@@ -393,11 +398,12 @@ export default class SRPlugin extends Plugin {
         // sort the deck names
         this.deckTree.sortSubdecksList();
         if (this.data.settings.showDebugMessages) {
-            console.log(`SR: ${t("EASES")}`, this.easeByPath);
-            console.log(`SR: ${t("DECKS")}`, this.deckTree);
+            console.log(`SR: Eases`, this.easeByPath);
+            console.log(`SR: Decks`, this.reviewDecks);
         }
 
         for (const deckKey in this.reviewDecks) {
+            console.log("Sorting deck: " + deckKey);
             this.reviewDecks[deckKey].sortNotes(this.pageranks);
         }
 
@@ -667,12 +673,16 @@ export default class SRPlugin extends Plugin {
             this.reviewNextNote(reviewDeckNames[0], 0);
         } else {
             const deckSelectionModal = new ReviewDeckSelectionModal(this.app, reviewDeckNames);
-            deckSelectionModal.submitCallback = (deckKey: string) => this.reviewNextNote(deckKey);
+            deckSelectionModal.submitCallback = (deckKey: string) => this.reviewNextNote(deckKey, 0);
             deckSelectionModal.open();
         }
     }
 
+    // RESUME HERE
     async reviewNextNote(deckKey: string, indexOffset: int): Promise<void> {
+        //Print the deck Key
+        console.log("Deck Key: " + deckKey);
+        console.log("Index Offset: " + indexOffset);
         if (!Object.prototype.hasOwnProperty.call(this.reviewDecks, deckKey)) {
             new Notice(t("NO_DECK_EXISTS", { deckName: deckKey }));
             return;
@@ -681,11 +691,13 @@ export default class SRPlugin extends Plugin {
         this.lastSelectedReviewDeck = deckKey;
         const deck = this.reviewDecks[deckKey];
 
+        console.log("Deck due notes count: " + deck.dueNotesCount);
+
         if (deck.dueNotesCount > 0) {
             const index = this.data.settings.openRandomNote
                 ? Math.floor(Math.random() * deck.dueNotesCount)
                 : 0 + indexOffset;
-            //console.log("Attempting next note open: due notes, index: " + index + ", note: " + deck.scheduledNotes[index].note.basename);
+            console.log("Attempting next note open: due notes, index: " + index + ", note: " + deck.scheduledNotes[index].note.basename);
             await this.app.workspace.getLeaf().openFile(deck.scheduledNotes[index].note);
             return;
         }
