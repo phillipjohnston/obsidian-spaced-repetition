@@ -36,7 +36,7 @@ export default {
     REVIEW_ALL_CARDS: "Review flashcards from all notes",
     REVIEW_CARDS_IN_NOTE: "Review flashcards in this note",
     CRAM_CARDS_IN_NOTE: "Cram flashcards in this note",
-STATUS_BAR: "Review: ${dueNotesCount} note(s), ${dueFlashcardsCount} card(s) due",
+STATUS_BAR: "Review: ${dueNotesCount} note(s) due",
     SYNC_TIME_TAKEN: "Sync took ${t}ms",
     NOTE_IN_IGNORED_FOLDER: "Note is saved under ignored folder (check settings).",
     PLEASE_TAG_NOTE: "Please tag the note appropriately for reviewing (in settings).",

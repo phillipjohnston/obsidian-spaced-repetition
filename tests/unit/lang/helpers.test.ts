@@ -68,22 +68,8 @@ test("Test translation with interpolation in English", () => {
         mockLocale.mockImplementation(() => "en");
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const { t } = require("src/lang/helpers");
-        expect(t("STATUS_BAR", { dueNotesCount: 1, dueFlashcardsCount: 2 })).toEqual(
-            "Review: 1 note(s), 2 card(s) due",
-        );
-    });
-});
-
-test("Test translation with interpolation in German", () => {
-    jest.isolateModules(() => {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const { moment } = require("obsidian");
-        const mockLocale = moment.locale as jest.MockedFunction<() => string>;
-        mockLocale.mockImplementation(() => "de");
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const { t } = require("src/lang/helpers");
-        expect(t("STATUS_BAR", { dueNotesCount: 1, dueFlashcardsCount: 2 })).toEqual(
-            "Wiederholung: 1 Notiz(en), 2 Karte(n) anstehend",
+        expect(t("STATUS_BAR", { dueNotesCount: 1 })).toEqual(
+            "Review: 1 note(s) due",
         );
     });
 });
