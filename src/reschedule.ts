@@ -8,35 +8,6 @@ import { SR_DUE_REGEX } from "src/constants";
 // TODO: reschdule what's due today (workaround: just wait until past due)
 // TODO: balance due in the future
 
-/* Notes
-        const now = window.moment(Date.now());
-        const todayDate: string = now.format("YYYY-MM-DD");
-
-            const dueUnix: number = window
-                .moment(frontmatter["sr-due"], ["YYYY-MM-DD", "DD-MM-YYYY", "ddd MMM DD YYYY"])
-                .valueOf();
-
-        const dueString: string = due.format("YYYY-MM-DD");
-
-        var due = window.moment(now + intervalWithJitter * 24 * 3600 * 1000);
-
-            if (dueUnix <= now.valueOf()) {
-                this.dueNotesCount++;
-            }
-
-        if(SR_DUE_REGEX.test(fileText))
-        {
-            const yaml_info = SR_DUE_REGEX.exec(fileText);
-            fileText = fileText.replace(
-                SR_DUE_REGEX,
-                `---\n${yaml_info[1]}sr-due: ${dueString}\n${yaml_info[3]}---`,
-            );
-        }
-*/
-
-// TODO: this needs to be somewhere else and imported
-// because we could use this elsewhere
-
 function incrementDay(date: Date): Date
 {
     return new Date(date.getTime() + (24 * 3600 * 1000));
