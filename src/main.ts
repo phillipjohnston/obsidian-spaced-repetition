@@ -274,7 +274,10 @@ export default class SRPlugin extends Plugin {
                     }
                     matchedNoteTags.push(tagToReview);
                     shouldIgnore = false;
-                    break;
+                    // This used to break, which works if you only want to register for
+                    // the first found deck. But we want to register for multiple decks.
+                    // This allows us to review normally, or to review a priority deck variant
+                    // that pulls out a subset of high priority notes.
                 }
             }
             if (shouldIgnore) {
