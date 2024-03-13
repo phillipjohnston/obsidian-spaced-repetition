@@ -600,7 +600,6 @@ export default class SRPlugin extends Plugin {
         new RescheduleBacklogModal(this.app, this.reviewDecks).open();
     }
 
-    // RESUME HERE
     async reviewNextNote(deckKey: string): Promise<void> {
         //Print the deck Key
         console.log("Deck Key: " + deckKey);
