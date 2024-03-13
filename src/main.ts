@@ -1,6 +1,7 @@
 // TODO:
 // - remove flashcard references
 // - remove pageranks
+// - gut/simplify Locale support
 
 import {
     Notice,
@@ -22,7 +23,7 @@ import {
     SR_DUE_REGEX,
     SR_EASE_REGEX
 } from "src/constants";
-import { escapeRegexString, cyrb53 } from "src/utils";
+import { escapeRegexString } from "src/utils";
 import { ReviewDeck, ReviewDeckSelectionModal } from "src/review-deck";
 import { t } from "src/lang/helpers";
 import { parse } from "src/parser";
