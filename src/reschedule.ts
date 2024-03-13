@@ -123,7 +123,7 @@ async function rewrite_due_date(note: SchedNote, newDate: Date)
     console.log("Rescheduled note " + note.note.path + " to " + newDate);
 }
 
-function rescheduleNotes(deckList: ReviewDeck[],
+async function rescheduleNotes(deckList: ReviewDeck[],
     deck: ReviewDeck,
     noteType: int,
     days: int,
@@ -207,7 +207,7 @@ function rescheduleNotes(deckList: ReviewDeck[],
         for(let i of validIndices)
         {
             let newDate = rescheduleDate(today, dateDelta, includeWeekends);
-            rewrite_due_date(deck.scheduledNotes[i], newDate);
+            await rewrite_due_date(deck.scheduledNotes[i], newDate);
 
             // This saves us needing to update in another way
             deck.dueNotesCount--;
@@ -230,7 +230,7 @@ function rescheduleNotes(deckList: ReviewDeck[],
 
         // Now that things are rescheduled, we need to update our
         // deck information - no sync needed now.
-        deckList[key].sortNotes();
+        deckList[key].sortScheduledNotes();
         deckList[key].currentIndex = 0;
     }
 

@@ -342,7 +342,8 @@ export default class SRPlugin extends Plugin {
 
         for (const deckKey in this.reviewDecks) {
             console.log("Sorting deck: " + deckKey);
-            this.reviewDecks[deckKey].sortNotes(this.pageranks);
+            this.reviewDecks[deckKey].sortNewNotes(this.pageranks);
+            this.reviewDecks[deckKey].sortScheduledNotes();
         }
 
         if (this.data.settings.showDebugMessages) {

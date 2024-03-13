@@ -31,12 +31,14 @@ export class ReviewDeck {
         this.activeFolders = new Set([this.deckName, t("TODAY")]);
     }
 
-    public sortNotes(pageranks: Record<string, number>): void {
+    public sortNewNotes(pageranks: Record<string, number>): void {
         // sort new notes by importance
         this.newNotes = this.newNotes.sort(
             (a: TFile, b: TFile) => (pageranks[b.path] || 0) - (pageranks[a.path] || 0),
         );
+    }
 
+    public sortScheduledNotes(): void {
         // sort scheduled notes by date & within those days, sort them by TYPE and age (older first)
         this.scheduledNotes = this.scheduledNotes.sort((a: SchedNote, b: SchedNote) => {
             // First by due date
@@ -57,8 +59,7 @@ export class ReviewDeck {
                 return b.interval - a.interval;
             }
 
-            // Then by pagerank
-            return (pageranks[b.note.path] || 0) - (pageranks[a.note.path] || 0);
+            return 0;
         });
     }
 }
