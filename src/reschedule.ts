@@ -1,19 +1,27 @@
 import { App, Modal, TFile, Setting } from "obsidian";
 
+import ReviewDeck from "src/review-deck";
+
+// TODO: need to trigger a sort + reset counters after rescheduling
+
 export class RescheduleBacklogModal extends Modal {
   rescheduleDays: int;
   rescheduleNoteType: int;
   rescheduleIncludesWeekends: bool;
   rescheduleDeck: string;
   deckKeys: string[];
+  deckList: ReviewDeck[];
 
-  constructor(app: App, deckKeys: string[]) {
+  constructor(app: App, deckList: ReviewDeck[]) {
     super(app);
     this.rescheduleDays = 0;
     this.rescheduleNoteType = 0;
     this.rescheduleIncludesWeekends = true;
     this.rescheduleDeck = "all";
-    this.deckKeys = deckKeys;
+    this.deckKeys = Object.keys(deckList);
+
+    // TODO: double confirm that this does not make a copy
+    this.deckList = deckList;
   }
 
   onOpen() {

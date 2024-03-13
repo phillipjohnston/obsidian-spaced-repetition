@@ -582,8 +582,7 @@ export default class SRPlugin extends Plugin {
     }
 
     openRescheduleBacklogModal() {
-        const reviewDeckNames: string[] = Object.keys(this.reviewDecks);
-        new RescheduleBacklogModal(this.app, reviewDeckNames).open();
+        new RescheduleBacklogModal(this.app, this.reviewDecks).open();
     }
 
     // RESUME HERE
