@@ -1,10 +1,6 @@
 // TODO:
 // - remove flashcard references
-// - remove bury date
 // - remove pageranks
-// - reduce the number of syncs and sorts - how can I keep the current deck,
-//  an index into the array, and then only resort when changing decks or exausting
-//  all new notes?
 
 import {
     Notice,
@@ -36,18 +32,11 @@ import { appIcon } from "src/icons/appicon";
 
 interface PluginData {
     settings: SRSettings;
-    buryDate: string;
-    // hashes of card texts
-    // should work as long as user doesn't modify card's text
-    // which covers most of the cases
-    buryList: string[];
     historyDeck: string | null;
 }
 
 const DEFAULT_DATA: PluginData = {
     settings: DEFAULT_SETTINGS,
-    buryDate: "",
-    buryList: [],
     historyDeck: null,
 };
 
@@ -142,10 +131,7 @@ export default class SRPlugin extends Plugin {
             id: "srs-note-review-open-note",
             name: t("OPEN_NOTE_FOR_REVIEW"),
             callback: async () => {
-                if (!this.syncLock) {
-                    await this.sync();
-                    this.reviewNextNoteModal();
-                }
+                this.reviewNextNoteModal();
             },
         });
 
@@ -157,6 +143,26 @@ export default class SRPlugin extends Plugin {
                 if (openFile && openFile.extension === "md") {
                     this.saveReviewResponse(openFile, ReviewResponse.Postpone);
                 }
+            },
+        })
+
+        this.addCommand({
+            id: 'srs-note-review-skip',
+            name: t("SKIP_NOTE_CMD"),
+            callback: () => {
+                if(this.lastSelectedReviewDeck)
+                {
+                    this.reviewDecks[this.lastSelectedReviewDeck].currentIndex++;
+                    this.reviewNextNote(this.lastSelectedReviewDeck);
+                }
+            },
+        })
+
+        this.addCommand({
+            id: 'srs-note-review-sync',
+            name: t("SYNC_CMD"),
+            callback: () => {
+                this.sync();
             },
         })
 
@@ -280,6 +286,7 @@ export default class SRPlugin extends Plugin {
                     // that pulls out a subset of high priority notes.
                 }
             }
+
             if (shouldIgnore) {
                 continue;
             }
@@ -594,45 +601,58 @@ export default class SRPlugin extends Plugin {
 
         await this.app.vault.modify(note, fileText);
 
+        // If there's no deck selected, we still allow the note to be processed,
+        // we just don't need to update deck stats
+        if(this.lastSelectedReviewDeck)
+        {
+            this.reviewDecks[this.lastSelectedReviewDeck].currentIndex++;
+        }
+
         new Notice(t("RESPONSE_RECEIVED"));
 
-        await this.sync();
         if (this.data.settings.autoNextNote) {
-            // This is a workaround, which ideally I will remove
-            await this.reviewNextNote(this.lastSelectedReviewDeck, 1);
+            await this.reviewNextNote(this.lastSelectedReviewDeck);
         }
     }
 
     async reviewNextNoteModal(): Promise<void> {
         const reviewDeckNames: string[] = Object.keys(this.reviewDecks);
         if (reviewDeckNames.length === 1) {
-            this.reviewNextNote(reviewDeckNames[0], 0);
+            this.reviewNextNote(reviewDeckNames[0]);
         } else {
             const deckSelectionModal = new ReviewDeckSelectionModal(this.app, reviewDeckNames);
-            deckSelectionModal.submitCallback = (deckKey: string) => this.reviewNextNote(deckKey, 0);
+            deckSelectionModal.submitCallback = (deckKey: string) => this.reviewNextNote(deckKey);
             deckSelectionModal.open();
         }
     }
 
     // RESUME HERE
-    async reviewNextNote(deckKey: string, indexOffset: int): Promise<void> {
+    async reviewNextNote(deckKey: string): Promise<void> {
         //Print the deck Key
         console.log("Deck Key: " + deckKey);
-        console.log("Index Offset: " + indexOffset);
         if (!Object.prototype.hasOwnProperty.call(this.reviewDecks, deckKey)) {
             new Notice(t("NO_DECK_EXISTS", { deckName: deckKey }));
             return;
         }
 
-        this.lastSelectedReviewDeck = deckKey;
+        if(this.lastSelectedReviewDeck != deckKey)
+        {
+            this.lastSelectedReviewDeck = deckKey;
+            // When switching decks, we should force a sync.
+            await this.sync();
+            // Note that sync() will reset the currentIndex for all decks
+        }
+
         const deck = this.reviewDecks[deckKey];
 
+
         console.log("Deck due notes count: " + deck.dueNotesCount);
+        console.log("Current index into sync'd list: " + deck.currentIndex);
 
         if (deck.dueNotesCount > 0) {
             const index = this.data.settings.openRandomNote
                 ? Math.floor(Math.random() * deck.dueNotesCount)
-                : 0 + indexOffset;
+                : deck.currentIndex;
             console.log("Attempting next note open: due notes, index: " + index + ", note: " + deck.scheduledNotes[index].note.basename);
             await this.app.workspace.getLeaf().openFile(deck.scheduledNotes[index].note);
             return;
@@ -641,7 +661,7 @@ export default class SRPlugin extends Plugin {
         if (deck.newNotes.length > 0) {
             const index = this.data.settings.openRandomNote
                 ? Math.floor(Math.random() * deck.newNotes.length)
-                : 0 + indexOffset;
+                : deck.currentIndex;
             await this.app.workspace.getLeaf().openFile(deck.newNotes[index]);
             return;
         }
