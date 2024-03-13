@@ -56,7 +56,6 @@ export default class SRPlugin extends Plugin {
 
     public newNotes: TFile[] = [];
     public scheduledNotes: SchedNote[] = [];
-    public easeByPath: Record<string, number> = {};
     private incomingLinks: Record<string, LinkStat[]> = {};
     private pageranks: Record<string, number> = {};
     private dueNotesCount = 0;
@@ -222,7 +221,6 @@ export default class SRPlugin extends Plugin {
 
         // reset notes stuff
         graph.reset();
-        this.easeByPath = {};
         this.incomingLinks = {};
         this.pageranks = {};
         this.dueNotesCount = 0;
@@ -318,13 +316,6 @@ export default class SRPlugin extends Plugin {
                 }
             }
 
-            if (Object.prototype.hasOwnProperty.call(this.easeByPath, note.path)) {
-                this.easeByPath[note.path] =
-                    (this.easeByPath[note.path] + frontmatter["sr-ease"]) / 2;
-            } else {
-                this.easeByPath[note.path] = frontmatter["sr-ease"];
-            }
-
             if (dueUnix <= now.valueOf()) {
                 this.dueNotesCount++;
             }
@@ -341,7 +332,6 @@ export default class SRPlugin extends Plugin {
         });
 
         if (this.data.settings.showDebugMessages) {
-            console.log(`SR: Eases`, this.easeByPath);
             console.log(`SR: Decks`, this.reviewDecks);
         }
 
@@ -445,26 +435,6 @@ export default class SRPlugin extends Plugin {
                     linkPGTotal = 0,
                     totalLinkCount = 0;
 
-                for (const statObj of this.incomingLinks[note.path] || []) {
-                    const ease: number = this.easeByPath[statObj.sourcePath];
-                    if (ease) {
-                        linkTotal += statObj.linkCount * this.pageranks[statObj.sourcePath] * ease;
-                        linkPGTotal += this.pageranks[statObj.sourcePath] * statObj.linkCount;
-                        totalLinkCount += statObj.linkCount;
-                    }
-                }
-
-                const outgoingLinks = this.app.metadataCache.resolvedLinks[note.path] || {};
-                for (const linkedFilePath in outgoingLinks) {
-                    const ease: number = this.easeByPath[linkedFilePath];
-                    if (ease) {
-                        linkTotal +=
-                            outgoingLinks[linkedFilePath] * this.pageranks[linkedFilePath] * ease;
-                        linkPGTotal += this.pageranks[linkedFilePath] * outgoingLinks[linkedFilePath];
-                        totalLinkCount += outgoingLinks[linkedFilePath];
-                    }
-                }
-
                 const linkContribution: number =
                     this.data.settings.maxLinkFactor *
                     Math.min(1.0, Math.log(totalLinkCount + 0.5) / Math.log(64));
@@ -473,10 +443,7 @@ export default class SRPlugin extends Plugin {
                     (totalLinkCount > 0
                         ? (linkContribution * linkTotal) / linkPGTotal
                         : linkContribution * this.data.settings.baseEase);
-                // add note's average flashcard ease if available
-                if (Object.prototype.hasOwnProperty.call(this.easeByPath, note.path)) {
-                    ease = (ease + this.easeByPath[note.path]) / 2;
-                }
+
                 ease = Math.round(ease);
                 interval = 1.0;
                 delayBeforeReview = 0;
