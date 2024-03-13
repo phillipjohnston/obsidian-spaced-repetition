@@ -15,6 +15,7 @@ export interface SchedNote {
     ease: number;
     type: NoteTypes;
     interval: number;
+    rebalance: bool;
 }
 
 export class ReviewDeck {

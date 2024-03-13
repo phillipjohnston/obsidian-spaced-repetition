@@ -256,6 +256,12 @@ export default class SRPlugin extends Plugin {
 
             let shouldIgnore = true;
             const matchedNoteTags = [];
+            let rebalance = true;
+
+             // TODO: allow no-rebalance tag to be configurable
+            if (tags.some((tag) => tag === "#no-rebalance")) {
+                rebalance = false;
+            }
 
             for (const tagToReview of this.data.settings.tagsToReview) {
                 if (tags.some((tag) => tag === tagToReview || tag.startsWith(tagToReview + "/"))) {
@@ -308,7 +314,8 @@ export default class SRPlugin extends Plugin {
             }
 
             for (const matchedNoteTag of matchedNoteTags) {
-                this.reviewDecks[matchedNoteTag].scheduledNotes.push({ note, dueUnix, ease, noteType, interval});
+                this.reviewDecks[matchedNoteTag].scheduledNotes.push(
+                    { note, dueUnix, ease, noteType, interval, rebalance});
                 if (dueUnix <= now.valueOf()) {
                     this.reviewDecks[matchedNoteTag].dueNotesCount++;
                 }
