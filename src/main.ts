@@ -49,7 +49,6 @@ export default class SRPlugin extends Plugin {
     private statusBar: HTMLElement;
     private reviewQueueView: ReviewQueueListView;
     public data: PluginData;
-    public syncLock = false;
 
     public reviewDecks: { [deckKey: string]: ReviewDeck } = {};
     public lastSelectedReviewDeck: string;
@@ -73,10 +72,7 @@ export default class SRPlugin extends Plugin {
         this.statusBar.setAttribute("aria-label", t("OPEN_NOTE_FOR_REVIEW"));
         this.statusBar.setAttribute("aria-label-position", "top");
         this.statusBar.addEventListener("click", async () => {
-            if (!this.syncLock) {
-                await this.sync();
-                this.reviewNextNoteModal();
-            }
+            this.reviewNextNoteModal();
         });
 
 /* Review notes icon?
@@ -202,9 +198,7 @@ export default class SRPlugin extends Plugin {
         this.app.workspace.onLayoutReady(() => {
             this.initView();
             setTimeout(async () => {
-                if (!this.syncLock) {
-                    await this.sync();
-                }
+                await this.sync();
             }, 2000);
         });
     }
@@ -214,10 +208,6 @@ export default class SRPlugin extends Plugin {
     }
 
     async sync(ignoreStats = false): Promise<void> {
-        if (this.syncLock) {
-            return;
-        }
-        this.syncLock = true;
 
         // reset notes stuff
         graph.reset();
@@ -356,7 +346,6 @@ export default class SRPlugin extends Plugin {
         );
 
         if (this.data.settings.enableNoteReviewPaneOnStartup) this.reviewQueueView.redraw();
-        this.syncLock = false;
     }
 
     async saveReviewResponse(note: TFile, response: ReviewResponse): Promise<void> {
