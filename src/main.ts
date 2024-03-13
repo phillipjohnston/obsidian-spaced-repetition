@@ -60,8 +60,6 @@ export default class SRPlugin extends Plugin {
     private dueNotesCount = 0;
     public dueDatesNotes: Record<number, number> = {}; // Record<# of days in future, due count>
 
-    public dueDatesFlashcards: Record<number, number> = {}; // Record<# of days in future, due count>
-
     async onload(): Promise<void> {
         await this.loadPluginData();
 
@@ -603,7 +601,6 @@ export default class SRPlugin extends Plugin {
         }
 
         const deck = this.reviewDecks[deckKey];
-
 
         console.log("Deck due notes count: " + deck.dueNotesCount);
         console.log("Current index into sync'd list: " + deck.currentIndex);
