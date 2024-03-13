@@ -25,6 +25,7 @@ import {
 } from "src/constants";
 import { escapeRegexString } from "src/utils";
 import { ReviewDeck, ReviewDeckSelectionModal } from "src/review-deck";
+import { RescheduleBacklogModal } from "src/reschedule";
 import { t } from "src/lang/helpers";
 import { parse } from "src/parser";
 import { appIcon } from "src/icons/appicon";
@@ -132,6 +133,12 @@ export default class SRPlugin extends Plugin {
             callback: async () => {
                 this.reviewNextNoteModal();
             },
+        });
+
+        this.addCommand({
+            id: 'reschedule-backlog',
+            name: 'Reschedule Backlog',
+            callback: () => {this.openRescheduleBacklogModal()}
         });
 
         this.addCommand({
@@ -623,6 +630,11 @@ export default class SRPlugin extends Plugin {
             deckSelectionModal.submitCallback = (deckKey: string) => this.reviewNextNote(deckKey);
             deckSelectionModal.open();
         }
+    }
+
+    openRescheduleBacklogModal() {
+        const reviewDeckNames: string[] = Object.keys(this.reviewDecks);
+        new RescheduleBacklogModal(this.app, reviewDeckNames).open();
     }
 
     // RESUME HERE
