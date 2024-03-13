@@ -24,7 +24,7 @@ import {
     SR_EASE_REGEX
 } from "src/constants";
 import { escapeRegexString } from "src/utils";
-import { ReviewDeck, ReviewDeckSelectionModal, SchedNote } from "src/review-deck";
+import { ReviewDeck, ReviewDeckSelectionModal, SchedNote, NoteTypes } from "src/review-deck";
 import { RescheduleBacklogModal } from "src/reschedule";
 import { t } from "src/lang/helpers";
 import { parse } from "src/parser";
@@ -297,8 +297,18 @@ export default class SRPlugin extends Plugin {
             const ease: number = frontmatter["sr-ease"];
             const interval: number = frontmatter["sr-interval"];
 
+            let noteType = NoteTypes.STANDARD;
+            if(ease < 0)
+            {
+                noteType = NoteTypes.GEOMETRIC
+            }
+            else if (ease == 0)
+            {
+                noteType = NoteTypes.PERIODIC;
+            }
+
             for (const matchedNoteTag of matchedNoteTags) {
-                this.reviewDecks[matchedNoteTag].scheduledNotes.push({ note, dueUnix, ease, interval});
+                this.reviewDecks[matchedNoteTag].scheduledNotes.push({ note, dueUnix, ease, noteType, interval});
                 if (dueUnix <= now.valueOf()) {
                     this.reviewDecks[matchedNoteTag].dueNotesCount++;
                 }

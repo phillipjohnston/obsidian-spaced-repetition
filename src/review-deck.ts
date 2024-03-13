@@ -2,10 +2,18 @@ import { App, FuzzySuggestModal, TFile } from "obsidian";
 
 import { t } from "src/lang/helpers";
 
+export enum NoteTypes {
+    ALL,
+    STANDARD,
+    PERIODIC,
+    GEOMETRIC
+}
+
 export interface SchedNote {
     note: TFile;
     dueUnix: number;
     ease: number;
+    type: NoteTypes;
     interval: number;
 }
 
