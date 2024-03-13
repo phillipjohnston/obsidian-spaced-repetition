@@ -488,7 +488,7 @@ export default class SRPlugin extends Plugin {
 
                 let jitter = Math.round(Math.random() * variationWindow);
 
-                //console.log("Adding jitter to note schedule: " + jitter);
+                console.log("Adding jitter to note schedule: " + jitter);
 
                 intervalWithJitter = interval + jitter;
             }
