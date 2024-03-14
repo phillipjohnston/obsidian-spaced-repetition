@@ -82,6 +82,7 @@ async function rewrite_due_date(note: SchedNote, newDate: Date)
 
     let fileText: string = await this.app.vault.read(note.note);
 
+    // TODO: optimization - make this into a function (can do for all variants)
     const yaml_info = SR_DUE_REGEX.exec(fileText);
     fileText = fileText.replace(
         SR_DUE_REGEX,
@@ -174,10 +175,8 @@ async function rescheduleNotes(deckList: ReviewDeck[],
         let dateDelta = 1;
         let addedPerDay = 0;
 
-        for(let i of validIndices)
-        {
+        let promises = validIndices.map(i => {
             let newDate = rescheduleDate(today, dateDelta, includeWeekends);
-            await rewrite_due_date(deck.scheduledNotes[i], newDate);
 
             // This saves us needing to update in another way
             deck.dueNotesCount--;
@@ -196,16 +195,19 @@ async function rescheduleNotes(deckList: ReviewDeck[],
                     dateDelta = 1; // wrap back around
                 }
             }
-        }
 
-        // Now that things are rescheduled, we need to update our
-        // deck information - no sync needed now.
-        deckList[key].sortScheduledNotes();
-        deckList[key].currentIndex = 0;
+            return rewrite_due_date(deck.scheduledNotes[i], newDate);
+        });
+
+        Promise.all(promises).then(() => {
+            // Now that things are rescheduled, we need to update our
+            // deck information - no sync needed now.
+            deckList[key].sortScheduledNotes();
+            deckList[key].currentIndex = 0;
+            log_debug("Rescheduling deck " + key + " complete.");
+            //log_debug(`SR: Decks post reschedule`, deckList);
+        });
     }
-
-    log_debug("Rescheduling complete.");
-    //log_debug(`SR: Decks post reschedule`, deckList);
 }
 
 export class RescheduleBacklogModal extends Modal {
