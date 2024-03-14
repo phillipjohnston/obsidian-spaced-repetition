@@ -577,7 +577,7 @@ export default class SRPlugin extends Plugin {
         // we just don't need to update deck stats
         if(this.lastSelectedReviewDeck)
         {
-            let deck = this.reviewDecks[this.lastSelectedReviewDeck].
+            let deck = this.reviewDecks[this.lastSelectedReviewDeck];
             deck.currentIndex++;
             deck.dueNotesCount--;
 
