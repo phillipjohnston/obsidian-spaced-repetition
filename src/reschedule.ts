@@ -1,6 +1,7 @@
 import { App, Modal, TFile, Setting } from "obsidian";
 import { ReviewDeck, NoteTypes, SchedNote } from "src/review-deck";
 import { SR_DUE_REGEX } from "src/constants";
+import { log_debug } from "src/logger";
 
 // TODO: reschedule future weekend due dates
 // TODO: reschdule what's due today (workaround: just wait until past due)
@@ -89,7 +90,7 @@ async function rewrite_due_date(note: SchedNote, newDate: Date)
 
     await this.app.vault.modify(note.note, fileText);
 
-    console.log("Rescheduled note " + note.note.path + " to " + newDate);
+    log_debug("Rescheduled note " + note.note.path + " to " + newDate);
 }
 
 async function rescheduleNotes(deckList: ReviewDeck[],
@@ -98,7 +99,7 @@ async function rescheduleNotes(deckList: ReviewDeck[],
     days: int,
     includeWeekends: boolean)
 {
-    console.log("[Reschedule] Request submitted with deck: " + deck  +
+    log_debug("[Reschedule] Request submitted with deck: " + deck  +
                 " rescheduleDays: " + days +
                 " rescheduleNoteType: " + noteType +
                 " Reschedule on weekends: " + includeWeekends);
@@ -121,23 +122,23 @@ async function rescheduleNotes(deckList: ReviewDeck[],
         keys = [deck];
     }
 
-    console.log("[Reschedule] Selected deck keys: " + keys);
+    log_debug("[Reschedule] Selected deck keys: " + keys);
 
     let today = new Date();
     today.setHours(0, 0, 0, 0);
     let todayUnix = today.getTime();
 
-    console.log("Today unix timestamp: " + todayUnix);
+    log_debug("[Reschedule] Today unix timestamp: " + todayUnix);
 
     for(let key of keys)
     {
         // This algorithm assumes a sorted deck list. We will iterate
         // through each scheduled note and reschedule it, but as soon as we
         // hit a note that matches today, we will stop the process.
-        console.log("Processing deck: " + key);
+        log_debug("[Review] Processing deck: " + key);
         let deck = deckList[key];
         let pastDueCount = findPastDueCount(deck, todayUnix);
-        console.log("Deck " + key + " has " + pastDueCount + " past due notes.");
+        log_debug("[Review] Deck " + key + " has " + pastDueCount + " past due notes.");
 
         let validIndices = [];
 
@@ -156,7 +157,7 @@ async function rescheduleNotes(deckList: ReviewDeck[],
         }
         else
         {
-            console.log("Filtering past due for note type: " + noteType);
+            log_debug("[Review] Filtering past due for note type: " + noteType);
             for(let i = 0; i < pastDueCount; i++)
             {
                 let note = deck.scheduledNotes[i];
@@ -167,7 +168,7 @@ async function rescheduleNotes(deckList: ReviewDeck[],
             }
         }
 
-        console.log("Past due count after filtering by note type: " + validIndices.length);
+        log_debug("[Review] Past due count after filtering by note type: " + validIndices.length);
 
         let reschedulePerDayTarget = Math.floor(validIndices.length / days);
         let dateDelta = 1;
@@ -203,8 +204,8 @@ async function rescheduleNotes(deckList: ReviewDeck[],
         deckList[key].currentIndex = 0;
     }
 
-    console.log("Rescheduling complete.");
-    console.log(`SR: Decks post reschedule`, deckList);
+    log_debug("Rescheduling complete.");
+    //log_debug(`SR: Decks post reschedule`, deckList);
 }
 
 export class RescheduleBacklogModal extends Modal {

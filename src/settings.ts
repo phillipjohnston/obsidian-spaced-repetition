@@ -1,6 +1,7 @@
 import { Notice, PluginSettingTab, Setting, App, Platform } from "obsidian";
 import type SRPlugin from "src/main";
 import { t } from "src/lang/helpers";
+import { setLogDebugMode } from 'src/logger';
 
 export interface SRSettings {
     // flashcards
@@ -80,8 +81,6 @@ export const DEFAULT_SETTINGS: SRSettings = {
     easyBonus: 1.3,
     maximumInterval: 36525,
     maxLinkFactor: 1.0,
-    // logging
-    showDebugMessages: false,
 };
 
 // https://github.com/mgmeyers/obsidian-kanban/blob/main/src/Settings.ts
@@ -721,6 +720,7 @@ export class SRSettingTab extends PluginSettingTab {
         containerEl.createEl("h3", { text: `${t("LOGGING")}` });
         new Setting(containerEl).setName(t("DISPLAY_DEBUG_INFO")).addToggle((toggle) =>
             toggle.setValue(this.plugin.data.settings.showDebugMessages).onChange(async (value) => {
+                setLogDebugMode(value);
                 this.plugin.data.settings.showDebugMessages = value;
                 await this.plugin.savePluginData();
             }),

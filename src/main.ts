@@ -14,6 +14,8 @@ import {
 } from "obsidian";
 import * as graph from "pagerank.js";
 
+import { log_debug, setLogDebugMode } from 'src/logger';
+
 import { SRSettingTab, SRSettings, DEFAULT_SETTINGS } from "src/settings";
 import { ReviewQueueListView, REVIEW_QUEUE_VIEW_TYPE } from "src/sidebar";
 import { Card, CardType, ReviewResponse, schedule } from "src/scheduling";
@@ -72,6 +74,8 @@ export default class SRPlugin extends Plugin {
         this.statusBar.addEventListener("click", async () => {
             this.reviewNextNoteModal();
         });
+        // Configure debug logging based on current setting
+        setLogDebugMode(this.data.settings.showDebugMessages);
 
 /* Review notes icon?
         this.addRibbonIcon("SpacedRepIcon", t("REVIEW_CARDS"), async () => {
@@ -266,7 +270,7 @@ export default class SRPlugin extends Plugin {
             for (const tagToReview of this.data.settings.tagsToReview) {
                 if (tags.some((tag) => tag === tagToReview || tag.startsWith(tagToReview + "/"))) {
                     if (!Object.prototype.hasOwnProperty.call(this.reviewDecks, tagToReview)) {
-                        console.log("Creating new deck for tag: " + tagToReview);
+                        log_debug("[Sync] Creating new deck for tag: " + tagToReview);
                         this.reviewDecks[tagToReview] = new ReviewDeck(tagToReview);
                     }
                     matchedNoteTags.push(tagToReview);
@@ -336,24 +340,20 @@ export default class SRPlugin extends Plugin {
             this.pageranks[node] = rank * 10000;
         });
 
-        if (this.data.settings.showDebugMessages) {
-            console.log(`SR: Decks`, this.reviewDecks);
-        }
+        log_debug(`[Sync] Decks`, this.reviewDecks);
 
         for (const deckKey in this.reviewDecks) {
-            console.log("Sorting deck: " + deckKey);
+            log_debug("[Sync] Sorting deck: " + deckKey);
             this.reviewDecks[deckKey].sortNewNotes(this.pageranks);
             this.reviewDecks[deckKey].sortScheduledNotes();
         }
 
-        if (this.data.settings.showDebugMessages) {
-            console.log(
-                "SR: " +
-                    t("SYNC_TIME_TAKEN", {
-                        t: Date.now() - now.valueOf(),
-                    }),
-            );
-        }
+        log_debug(
+            "[Sync] " +
+                t("SYNC_TIME_TAKEN", {
+                    t: Date.now() - now.valueOf(),
+                }),
+        );
 
         this.statusBar.setText(
             t("STATUS_BAR", {
@@ -473,7 +473,7 @@ export default class SRPlugin extends Plugin {
             const postponeWindow = 5; // [-5,5 variation around postpone date]
             const postpone_interval = 10 + (Math.round(Math.random() * (2 * postponeWindow) - postponeWindow));
             var due = window.moment(now + postpone_interval * 24 * 3600 * 1000);
-            console.log("Postponing for " + postpone_interval + " days");
+            log_debug("Postponing for " + postpone_interval + " days");
         }
         else
         {
@@ -506,7 +506,7 @@ export default class SRPlugin extends Plugin {
 
                 let jitter = Math.round(Math.random() * variationWindow);
 
-                console.log("Adding jitter to note schedule: " + jitter);
+                log_debug("Adding jitter to note schedule: " + jitter);
 
                 intervalWithJitter = interval + jitter;
             }
@@ -602,8 +602,6 @@ export default class SRPlugin extends Plugin {
     }
 
     async reviewNextNote(deckKey: string): Promise<void> {
-        //Print the deck Key
-        console.log("Deck Key: " + deckKey);
         if (!Object.prototype.hasOwnProperty.call(this.reviewDecks, deckKey)) {
             new Notice(t("NO_DECK_EXISTS", { deckName: deckKey }));
             return;
@@ -619,14 +617,14 @@ export default class SRPlugin extends Plugin {
 
         const deck = this.reviewDecks[deckKey];
 
-        console.log("Deck due notes count: " + deck.dueNotesCount);
-        console.log("Current index into sync'd list: " + deck.currentIndex);
+        log_debug("[Review] Deck due notes count: " + deck.dueNotesCount);
+        log_debug("[Review] Current index into sync'd list: " + deck.currentIndex);
 
         if (deck.dueNotesCount > 0) {
             const index = this.data.settings.openRandomNote
                 ? Math.floor(Math.random() * deck.dueNotesCount)
                 : deck.currentIndex;
-            console.log("Attempting next note open: due notes, index: " + index + ", note: " + deck.scheduledNotes[index].note.basename);
+            log_debug("[Review] Attempting next note open: due notes, index: " + index + ", note: " + deck.scheduledNotes[index].note.basename);
             await this.app.workspace.getLeaf().openFile(deck.scheduledNotes[index].note);
             return;
         }
