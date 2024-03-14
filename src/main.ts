@@ -149,6 +149,7 @@ export default class SRPlugin extends Plugin {
                 if(this.lastSelectedReviewDeck)
                 {
                     this.reviewDecks[this.lastSelectedReviewDeck].currentIndex++;
+                    this.reviewDecks[this.lastSelectedReviewDeck].dueNotesCount--;
                     this.reviewNextNote(this.lastSelectedReviewDeck);
                 }
             },
@@ -576,7 +577,10 @@ export default class SRPlugin extends Plugin {
         // we just don't need to update deck stats
         if(this.lastSelectedReviewDeck)
         {
-            this.reviewDecks[this.lastSelectedReviewDeck].currentIndex++;
+            let deck = this.reviewDecks[this.lastSelectedReviewDeck].
+            deck.currentIndex++;
+            deck.dueNotesCount--;
+
         }
 
         new Notice(t("RESPONSE_RECEIVED"));
