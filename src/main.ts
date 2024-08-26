@@ -143,6 +143,17 @@ export default class SRPlugin extends Plugin {
         })
 
         this.addCommand({
+            id: 'srs-note-review-postpone-long',
+            name: t("POSTPONE_LONG_NOTE_CMD"),
+            callback: () => {
+                const openFile: TFile | null = this.app.workspace.getActiveFile();
+                if (openFile && openFile.extension === "md") {
+                    this.saveReviewResponse(openFile, ReviewResponse.PostponeLong);
+                }
+            },
+        })
+
+        this.addCommand({
             id: 'srs-note-review-skip',
             name: t("SKIP_NOTE_CMD"),
             callback: () => {
@@ -473,6 +484,18 @@ export default class SRPlugin extends Plugin {
             // note, which is not what we want
             const postponeWindow = 5; // [-5,5 variation around postpone date]
             const postpone_interval = 10 + (Math.round(Math.random() * (2 * postponeWindow) - postponeWindow));
+            var due = window.moment(now + postpone_interval * 24 * 3600 * 1000);
+            log_debug("Postponing for " + postpone_interval + " days");
+        }
+        else  if(response == ReviewResponse.PostponeLong)
+        {
+            // This injects jitter into the rescheduling process, so that you
+            // don't postpone every card onto the same day
+
+            // Note that if you set interval here, you override interval in the
+            // note, which is not what we want
+            const postponeWindow = 5; // [-5,5 variation around postpone date]
+            const postpone_interval = 30 + (Math.round(Math.random() * (2 * postponeWindow) - postponeWindow));
             var due = window.moment(now + postpone_interval * 24 * 3600 * 1000);
             log_debug("Postponing for " + postpone_interval + " days");
         }

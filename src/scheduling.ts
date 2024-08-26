@@ -8,7 +8,8 @@ export enum ReviewResponse {
     Good,
     Hard,
     Reset,
-    Postpone
+    Postpone,
+    PostponeLong
 }
 
 export function schedule(

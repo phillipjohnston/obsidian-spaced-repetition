@@ -32,6 +32,7 @@ export default {
     REVIEW_NOTE_GOOD_CMD: "Review note as good",
     REVIEW_NOTE_HARD_CMD: "Review note as hard",
     POSTPONE_NOTE_CMD: "Postpone note review",
+    POSTPONE_LONG_NOTE_CMD: "Postpone note review (long)",
     SKIP_NOTE_CMD: "Skip note review",
     SYNC_CMD: "Resync deck status",
     CRAM_ALL_CARDS: "Select a deck to cram",
