@@ -491,10 +491,9 @@ export default class SRPlugin extends Plugin {
         {
             // This injects jitter into the rescheduling process, so that you
             // don't postpone every card onto the same day
-
             // Note that if you set interval here, you override interval in the
             // note, which is not what we want
-            const postponeWindow = 5; // [-5,5 variation around postpone date]
+            const postponeWindow = 7; // [-7,7 variation around postpone date]
             const postpone_interval = 30 + (Math.round(Math.random() * (2 * postponeWindow) - postponeWindow));
             var due = window.moment(now + postpone_interval * 24 * 3600 * 1000);
             log_debug("Postponing for " + postpone_interval + " days");
