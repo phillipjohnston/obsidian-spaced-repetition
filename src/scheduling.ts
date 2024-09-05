@@ -12,6 +12,61 @@ export enum ReviewResponse {
     PostponeLong
 }
 
+function hasFractionalPart(num) {
+    return num !== Math.floor(num);
+}
+
+function getFractionalPart(num) {
+    return num - Math.floor(num);
+}
+
+/* Convert from the note interval mapping to Date/window.moment
+ * expectations
+ * - .0 == Sunday
+ * - .1 == Sunday
+ * - .2 == Monday
+ * - .3 == Tuesday
+ * - .4 == Wednesday
+ * - .5 == Thursday
+ * - .6 == Friday
+ * - .7 == Saturday
+ * - .8 == Sunday
+ * - .9 == Sunday
+*/
+function normalizeDay(input_day)
+{
+    if(input_day == 0)
+    {
+        return 0;
+    }
+    else if(input_day >= 1 && input_day <= 7)
+    {
+        return input_day - 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+export function calculateDueDate(interval)
+{
+    const now = window.moment(Date.now());
+
+    if(hasFractionalPart(interval))
+    {
+        var target_day = normalizeDay(Math.round(getFractionalPart(interval)*10));
+        interval = Math.floor(interval);
+        var dueDate = now.add(interval, 'days');
+        var adjustment_days = (target_day - dueDate.day() + 7) % 7;
+        return dueDate.add(adjustment_days, 'days');
+    }
+    else
+    {
+        return now.add(interval, 'days')
+    }
+}
+
 export function schedule(
     response: ReviewResponse,
     interval: number,
@@ -73,14 +128,15 @@ export function schedule(
     {
         // When ease is zero, we just review a note on a periodic basis.
 
-        // Easy and hard adjust the periodic interval
+        // Easy and hard adjust the periodic interval, but we have to be careful
+        // to not adjust the fractional portion for days-of-the-week
         if (response === ReviewResponse.Easy) {
-            interval *= 1.2;
+            var fractional = getFractionalPart(interval);
+            interval = Math.round(Math.floor(interval) * 1.2) + fractional;
         } else if (response === ReviewResponse.Hard) {
-            interval *= 0.5;
+            var fractional = getFractionalPart(interval);
+            interval = Math.round(Math.floor(interval) * 0.5) + fractional;
         }
-
-        interval = Math.floor(interval);
     }
     else
     {

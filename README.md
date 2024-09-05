@@ -40,6 +40,28 @@ sr-type: periodic
 sr-interval: 15
 ```
 
+If you want to schedule a note to resurface on a specific day of the week, then you can add a fractional part to the interval, with, rounded to the nearest .1 value, interpreted as follows:
+
+- .0 == Sunday
+- .1 == Sunday
+- .2 == Monday
+- .3 == Tuesday
+- .4 == Wednesday
+- .5 == Thursday
+- .6 == Friday
+- .7 == Saturday
+- .8 == Saturday
+- .9 == Sunday
+
+
+So example, repeat roughly every 30 days, scheduling for the next Tuesday, you would set:
+
+```
+sr-interval: 30.2
+```
+
+This works with any type of note
+
 
 # Flashcard-Based and Note-Based Spaced Repetition Plugin
 

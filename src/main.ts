@@ -18,7 +18,7 @@ import { log_debug, setLogDebugMode } from 'src/logger';
 
 import { SRSettingTab, SRSettings, DEFAULT_SETTINGS } from "src/settings";
 import { ReviewQueueListView, REVIEW_QUEUE_VIEW_TYPE } from "src/sidebar";
-import { Card, CardType, ReviewResponse, schedule } from "src/scheduling";
+import { Card, CardType, ReviewResponse, calculateDueDate, schedule } from "src/scheduling";
 import {
     YAML_FRONT_MATTER_REGEX,
     SR_INTERVAL_REGEX,
@@ -484,7 +484,7 @@ export default class SRPlugin extends Plugin {
             // note, which is not what we want
             const postponeWindow = 5; // [-5,5 variation around postpone date]
             const postpone_interval = 10 + (Math.round(Math.random() * (2 * postponeWindow) - postponeWindow));
-            var due = window.moment(now + postpone_interval * 24 * 3600 * 1000);
+            var due = calculateDueDate(postpone_interval);
             log_debug("Postponing for " + postpone_interval + " days");
         }
         else  if(response == ReviewResponse.PostponeLong)
@@ -495,7 +495,7 @@ export default class SRPlugin extends Plugin {
             // note, which is not what we want
             const postponeWindow = 7; // [-7,7 variation around postpone date]
             const postpone_interval = 30 + (Math.round(Math.random() * (2 * postponeWindow) - postponeWindow));
-            var due = window.moment(now + postpone_interval * 24 * 3600 * 1000);
+            var due = calculateDueDate(postpone_interval);
             log_debug("Postponing for " + postpone_interval + " days");
         }
         else
@@ -536,7 +536,7 @@ export default class SRPlugin extends Plugin {
 
             // Note that we're scheduling due date with the potentially jittered
             // interval, without impacting the actual interval itself.
-            var due = window.moment(now + intervalWithJitter * 24 * 3600 * 1000);
+            var due = calculateDueDate(intervalWithJitter);
         }
 
         const dueString: string = due.format("YYYY-MM-DD");
