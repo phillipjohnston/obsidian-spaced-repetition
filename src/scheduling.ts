@@ -82,9 +82,15 @@ export function calculateDueDate(interval, schedule_weekends = true)
     else if(!schedule_weekends && (dueDate.day() == 0 || dueDate.day() == 6))
     {
         // Generate a random weekday choice (rather than stacking everything
-        // on a Monday or Tuesday)
-        var randomWeekday = Math.floor(Math.random() * 5) + 1;
-        dueDate = adjustToTargetDate(dueDate, randomWeekday);
+        // on a Monday or Tuesday). Though short intervals WILL land
+        // on Monday rather than being pushed super far out.
+
+        var targetWeekday = 1;
+        if(interval > 7)
+        {
+            targetWeekday = Math.floor(Math.random() * 5) + 1;
+        }
+        dueDate = adjustToTargetDate(dueDate, targetWeekday);
     }
 
     return dueDate;
