@@ -180,7 +180,8 @@ export function schedule(
             // We DON'T want to incorporate delay before review
             // because we just want the interval to progress normally, rather than
             // increasing because there was a small delay in reviewing.
-           interval =  Math.floor((interval) * (-1 * ease));
+           var fractional = getFractionalPart(interval);
+           interval =  Math.floor(Math.floor((interval)) * (-1 * ease)) + fractional;
         }
     }
 
