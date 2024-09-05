@@ -18,7 +18,7 @@ import { log_debug, setLogDebugMode } from 'src/logger';
 
 import { SRSettingTab, SRSettings, DEFAULT_SETTINGS } from "src/settings";
 import { ReviewQueueListView, REVIEW_QUEUE_VIEW_TYPE } from "src/sidebar";
-import { Card, CardType, ReviewResponse, calculateDueDate, schedule } from "src/scheduling";
+import { Card, CardType, ReviewResponse, calculateDueDate, schedule, generatePostponeInterval} from "src/scheduling";
 import {
     YAML_FRONT_MATTER_REGEX,
     SR_INTERVAL_REGEX,
@@ -482,8 +482,8 @@ export default class SRPlugin extends Plugin {
 
             // Note that if you set interval here, you override interval in the
             // note, which is not what we want
-            const postponeWindow = 5; // [-5,5 variation around postpone date]
-            const postpone_interval = 10 + (Math.round(Math.random() * (2 * postponeWindow) - postponeWindow));
+            // 10 days base with a random offset of [-5, 5]
+            const postpone_interval = generatePostponeInterval(interval, 10, 5);
             var due = calculateDueDate(postpone_interval, this.data.settings.scheduleWeekends);
             log_debug("Postponing for " + postpone_interval + " days");
         }
@@ -493,8 +493,8 @@ export default class SRPlugin extends Plugin {
             // don't postpone every card onto the same day
             // Note that if you set interval here, you override interval in the
             // note, which is not what we want
-            const postponeWindow = 7; // [-7,7 variation around postpone date]
-            const postpone_interval = 25 + (Math.round(Math.random() * (2 * postponeWindow) - postponeWindow));
+            // 25 days base with an offset of [-7, 7]
+            const postpone_interval = generatePostponeInterval(interval, 25, 7);
             var due = calculateDueDate(postpone_interval, this.data.settings.scheduleWeekends);
             log_debug("Postponing for " + postpone_interval + " days");
         }

@@ -51,8 +51,19 @@ function normalizeDay(input_day)
 
 function adjustToTargetDate(date, targetDay)
 {
-    var adjustment_days = (targetDay - date.day() + 7) % 7;
-    return date.add(adjustment_days, 'days');
+    var currentDay = date.day();
+    var offset = targetDay - currentDay;
+
+    if (offset > 0)
+    {
+        date = date.add(offset, 'days');
+    }
+    else if (offset < 0)
+    {
+        date = date.add(7 + offset, 'days');
+    }
+
+    return date;
 }
 
 export function calculateDueDate(interval, schedule_weekends = true)
@@ -78,6 +89,19 @@ export function calculateDueDate(interval, schedule_weekends = true)
 
     return dueDate;
 }
+
+
+// Interval is the note's default interval, which is currently used for fractional part
+// Postpone base is the starting number for the postponement random date generation
+// Postpone_window represents variation around the postpone date.
+//  e.g., a window of 5 means a random option of [-5, 5] days offset from the base.
+export function generatePostponeInterval(interval, postpone_base, postpone_window)
+{
+    var postpone_interval = postpone_base + (Math.round(Math.random() * (2 * postpone_window) - postpone_window));
+    postpone_interval += getFractionalPart(interval)
+    return postpone_interval;
+}
+
 
 export function schedule(
     response: ReviewResponse,
