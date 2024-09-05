@@ -1,44 +1,32 @@
-## Requirements
+# Note-Based Spaced Repetition Plugin
 
-- pnpm
-- esbuild
+## Settings
 
-```
-brew install pnpm esbuild
-```
+- Schedule on Weekends
+    - If set to false, weekends will be avoided in scheduling future note reviews. A weekday during the following week will be randomly selected for the note.
+    - When specifying a note interval as occurring on a weekend day, the note specification will be honored over the setting.
 
-to set up:
-```
-pnpm install
-```
+## Note Scheduling
 
-to build:
+### Note Types
 
-```
-pnpm dev
-```
+By default, spaced-review notes will use an Anki-like spacing algorithm.
 
-If you want to run repo inside your vault, need to link after building:
+You can select alternative types with the "sr-type" attribute in front-matter:
 
-```
-    ln -s build/main.js main.js
-```
+- periodic: for periodic review
+    - You can specify a custom interval for periodic note with the "sr-interval: x" frontmatter attribute, where x is your interval.
+    - "sr-ease: 0" also indicates a periodic note
+- geometric: for an "anti-srs" note review with long spacings following a geometric sequence.
+    - You can specify a custom geometric ease for initial scheduling even with the "sr-ease: -x" frontmatter attribute, where x is your geometric ratio (must be negative for geometric scheduling)
 
-
-New "sr-type" attribute in front-matter:
-periodic: for periodic review
-geometric: for anti-srs note review with long spacings
-
-You can specify a custom geometric ease for initial scheduling even with:
-sr-ease: -x, where x is your geometric ratio (must be negative for geometric scheduling)
-
-You can specify a custom interval for periodic note with:
-sr-interval: x, where x is your interval.
-
+Example front-matter values for scheduling a periodic note with a 15 day interval:
 ```
 sr-type: periodic
 sr-interval: 15
 ```
+
+### Scheduling Reviews on Specific Days
 
 If you want to schedule a note to resurface on a specific day of the week, then you can add a fractional part to the interval, with, rounded to the nearest .1 value, interpreted as follows:
 
@@ -60,44 +48,36 @@ So example, repeat roughly every 30 days, scheduling for the next Tuesday, you w
 sr-interval: 30.2
 ```
 
-This works with any type of note
+This works with any type of note.
 
+Note that if you have the "Schedule During Weekend" setting disabled, but specify a note as occurring on a weekend day, the note specification will be honored over the setting.
 
-# Flashcard-Based and Note-Based Spaced Repetition Plugin
+## Building
 
-<img src="https://img.shields.io/github/downloads/st3v3nmw/obsidian-spaced-repetition/total" /> <img src="https://img.shields.io/github/downloads/st3v3nmw/obsidian-spaced-repetition/latest/total?style=flat-square" /> <img src="https://img.shields.io/github/manifest-json/v/st3v3nmw/obsidian-spaced-repetition?style=flat-square" />
+## Requirements
 
-Fight the forgetting curve & note aging by reviewing flashcards & notes using spaced repetition on Obsidian.md
+- pnpm
+- esbuild
 
--   Check the documentation [here](https://www.stephenmwangi.com/obsidian-spaced-repetition/).
--   Check the [roadmap](https://github.com/st3v3nmw/obsidian-spaced-repetition/projects/2/) for upcoming features & fixes.
--   Raise an issue [here](https://github.com/st3v3nmw/obsidian-spaced-repetition/issues/) if you have a feature request or a bug report.
--   Visit the [discussions](https://github.com/st3v3nmw/obsidian-spaced-repetition/discussions/) section for Q&A help, feedback, and general discussion.
--   The plugin has been translated into _Arabic / العربية, Chinese (Simplified) / 简体中文, Chinese (Traditional) / 繁體中文, Czech / čeština, German / Deutsch, Korean / 한국어, Japanese / 日本語, Portuguese (Brazil) / Português do Brasil, Spanish / Español, and Russian / русский_ by the Obsidian community 😄.
-    -   To help translate this plugin to your language, check the [translation guide here](https://www.stephenmwangi.com/obsidian-spaced-repetition/contributing/#translating_1).
+```
+brew install pnpm esbuild
+```
 
-## Features
+to set up:
+```
+pnpm install
+```
 
--   Flashcards
-    -   [Decks](https://www.stephenmwangi.com/obsidian-spaced-repetition/flashcards/#decks) (Using Obsidian's hierarchical tags or folder structure)
-    -   [Single-line style](https://www.stephenmwangi.com/obsidian-spaced-repetition/flashcards/#single-line-basic-remnote-style) (`Question::Answer`)
-    -   [Single-line reversed style](https://www.stephenmwangi.com/obsidian-spaced-repetition/flashcards/#single-line-reversed) (`Question:::Answer`)
-    -   [Multi-line style](https://www.stephenmwangi.com/obsidian-spaced-repetition/flashcards/#multi-line-basic) (Separated by `?`)
-    -   [Multi-line reversed style](https://www.stephenmwangi.com/obsidian-spaced-repetition/flashcards/#multi-line-reversed) (Separated by `??`)
-    -   [Cloze cards](https://www.stephenmwangi.com/obsidian-spaced-repetition/flashcards/#cloze-cards) (`==highlight==` your cloze deletions!, `**bolded text**`, or `{{text in curly braces}}`)
-    -   [Card context - automatic titles based on headings](https://www.stephenmwangi.com/obsidian-spaced-repetition/flashcards/#context) (i.e. `Note title > Heading 1 > Subheading`)
-    -   Rich text support in flashcards (inherited from Obsidian)
-        -   Images, Audio, & Video
-        -   LaTeX
-        -   Code syntax highlighting
-        -   Footnotes
--   Notes
-    -   [Reviewing entire notes](https://www.stephenmwangi.com/obsidian-spaced-repetition/notes/)
-    -   Possible use case: [Incremental writing](https://www.stephenmwangi.com/obsidian-spaced-repetition/notes/#incremental-writing)
--   [Statistics](https://www.stephenmwangi.com/obsidian-spaced-repetition/flashcards/#statistics)
+to build:
 
-## Usage
+```
+pnpm dev
+```
 
-Check the [docs](https://www.stephenmwangi.com/obsidian-spaced-repetition/) for more details.
+(Note to self: recently I've had to use `npm run dev`)
 
-<a href='https://ko-fi.com/M4M44DEN6' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi3.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+If you want to run repo inside your vault, need to link after building:
+
+```
+    ln -s build/main.js main.js
+```
