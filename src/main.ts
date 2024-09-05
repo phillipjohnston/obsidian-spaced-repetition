@@ -494,7 +494,7 @@ export default class SRPlugin extends Plugin {
             // Note that if you set interval here, you override interval in the
             // note, which is not what we want
             const postponeWindow = 7; // [-7,7 variation around postpone date]
-            const postpone_interval = 30 + (Math.round(Math.random() * (2 * postponeWindow) - postponeWindow));
+            const postpone_interval = 25 + (Math.round(Math.random() * (2 * postponeWindow) - postponeWindow));
             var due = calculateDueDate(postpone_interval, this.data.settings.scheduleWeekends);
             log_debug("Postponing for " + postpone_interval + " days");
         }
