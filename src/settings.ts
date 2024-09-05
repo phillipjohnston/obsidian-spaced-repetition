@@ -10,6 +10,7 @@ export interface SRSettings {
     noteFoldersToIgnore: string[];
     openRandomNote: boolean;
     autoNextNote: boolean;
+    scheduleWeekends: boolean;
     disableFileMenuReviewOptions: boolean;
     maxNDaysNotesReviewQueue: number;
     // UI preferences
@@ -31,6 +32,7 @@ export const DEFAULT_SETTINGS: SRSettings = {
     noteFoldersToIgnore: [],
     openRandomNote: false,
     autoNextNote: false,
+    scheduleWeekends: false,
     disableFileMenuReviewOptions: false,
     maxNDaysNotesReviewQueue: 365,
     // UI settings
@@ -123,6 +125,13 @@ export class SRSettingTab extends PluginSettingTab {
                         await this.plugin.savePluginData();
                     }),
             );
+
+        new Setting(containerEl).setName("Schedule During Weekend").addToggle((toggle) =>
+            toggle.setValue(this.plugin.data.settings.scheduleWeekends).onChange(async (value) => {
+                this.plugin.data.settings.scheduleWeekends = value;
+                await this.plugin.savePluginData();
+            }),
+        );
 
         new Setting(containerEl).setName(t("AUTO_NEXT_NOTE")).addToggle((toggle) =>
             toggle.setValue(this.plugin.data.settings.autoNextNote).onChange(async (value) => {

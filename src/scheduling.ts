@@ -49,7 +49,7 @@ function normalizeDay(input_day)
     }
 }
 
-export function calculateDueDate(interval)
+export function calculateDueDate(interval, schedule_weekends = true)
 {
     const now = window.moment(Date.now());
 
@@ -63,7 +63,21 @@ export function calculateDueDate(interval)
     }
     else
     {
-        return now.add(interval, 'days')
+        var dueDate = now.add(interval, 'days')
+        var scheduleDay = dueDate.day();
+        if(!schedule_weekends && (scheduleDay == 0 || scheduleDay == 6))
+        {
+            // Generate a random weekday choice (rather than stacking everything
+            // on a Monday or Tuesday)
+            var randomWeekday = Math.floor(Math.random() * 5) + 1;
+
+            // Calculate the number of days to add to reach the next random weekday
+            var adjustment_days = (randomWeekday - dueDate.day() + 7) % 7;
+
+            dueDate.add(adjustment_days, 'days');
+        }
+
+        return dueDate;
     }
 }
 

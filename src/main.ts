@@ -484,7 +484,7 @@ export default class SRPlugin extends Plugin {
             // note, which is not what we want
             const postponeWindow = 5; // [-5,5 variation around postpone date]
             const postpone_interval = 10 + (Math.round(Math.random() * (2 * postponeWindow) - postponeWindow));
-            var due = calculateDueDate(postpone_interval);
+            var due = calculateDueDate(postpone_interval, this.data.settings.scheduleWeekends);
             log_debug("Postponing for " + postpone_interval + " days");
         }
         else  if(response == ReviewResponse.PostponeLong)
@@ -495,7 +495,7 @@ export default class SRPlugin extends Plugin {
             // note, which is not what we want
             const postponeWindow = 7; // [-7,7 variation around postpone date]
             const postpone_interval = 30 + (Math.round(Math.random() * (2 * postponeWindow) - postponeWindow));
-            var due = calculateDueDate(postpone_interval);
+            var due = calculateDueDate(postpone_interval, this.data.settings.scheduleWeekends);
             log_debug("Postponing for " + postpone_interval + " days");
         }
         else
@@ -536,7 +536,7 @@ export default class SRPlugin extends Plugin {
 
             // Note that we're scheduling due date with the potentially jittered
             // interval, without impacting the actual interval itself.
-            var due = calculateDueDate(intervalWithJitter);
+            var due = calculateDueDate(intervalWithJitter, this.data.settings.scheduleWeekends);
         }
 
         const dueString: string = due.format("YYYY-MM-DD");
