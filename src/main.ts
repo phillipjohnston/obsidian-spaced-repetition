@@ -168,7 +168,7 @@ export default class SRPlugin extends Plugin {
 
         this.addCommand({
             id: 'srs-note-review-sync',
-            name: t("SYNC_CMD"),
+            name: 'Rebuild deck index',
             callback: () => {
                 this.sync();
             },
@@ -595,20 +595,25 @@ export default class SRPlugin extends Plugin {
 
         await this.app.vault.modify(note, fileText);
 
+        new Notice(t("RESPONSE_RECEIVED"));
+
         // If there's no deck selected, we still allow the note to be processed,
         // we just don't need to update deck stats
         if(this.lastSelectedReviewDeck)
         {
             let deck = this.reviewDecks[this.lastSelectedReviewDeck];
-            deck.currentIndex++;
-            deck.dueNotesCount--;
 
-        }
+            // We only want to advance if we're currently looking at a note in sequence.
+            // This avoids us marking a note reviewed that's not in the current review order and advancing the deck.
+            if(note.name === deck.scheduledNotes[deck.currentIndex].note.name)
+            {
+                deck.currentIndex++;
+                deck.dueNotesCount--;
 
-        new Notice(t("RESPONSE_RECEIVED"));
-
-        if (this.data.settings.autoNextNote) {
-            await this.reviewNextNote(this.lastSelectedReviewDeck);
+                if (this.data.settings.autoNextNote) {
+                    await this.reviewNextNote(this.lastSelectedReviewDeck);
+                }
+            }
         }
     }
 
