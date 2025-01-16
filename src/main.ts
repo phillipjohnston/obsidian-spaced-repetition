@@ -367,11 +367,22 @@ export default class SRPlugin extends Plugin {
                 }),
         );
 
-        this.statusBar.setText(
-            t("STATUS_BAR", {
-                dueNotesCount: this.dueNotesCount
-            }),
-        );
+        if (this.lastSelectedReviewDeck)
+        {
+            this.statusBar.setText(
+                t("STATUS_BAR", {
+                 dueNotesCount: this.reviewDecks[this.lastSelectedReviewDeck].dueNotesCount
+                }),
+            );
+        }
+        else
+        {
+            this.statusBar.setText(
+                t("STATUS_BAR", {
+                    dueNotesCount: this.dueNotesCount
+                }),
+            );
+        }
 
         if (this.data.settings.enableNoteReviewPaneOnStartup) this.reviewQueueView.redraw();
     }
