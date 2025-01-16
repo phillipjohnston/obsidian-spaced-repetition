@@ -370,17 +370,14 @@ export default class SRPlugin extends Plugin {
         if (this.lastSelectedReviewDeck)
         {
             this.statusBar.setText(
-                t("STATUS_BAR", {
-                 dueNotesCount: this.reviewDecks[this.lastSelectedReviewDeck].dueNotesCount
-                }),
+                `${this.lastSelectedReviewDeck}: ${this.reviewDecks[this.lastSelectedReviewDeck].dueNotesCount} due`
             );
         }
         else
         {
+            // Note that this.dueNotesCount is the total due
             this.statusBar.setText(
-                t("STATUS_BAR", {
-                    dueNotesCount: this.dueNotesCount
-                }),
+                `All: ${this.dueNotesCount} due`
             );
         }
 
