@@ -207,6 +207,17 @@ export default class SRPlugin extends Plugin {
             },
         });
 
+        this.addCommand({
+            id: "srs-note-review-reset",
+            name: t("RESET_NOTE_CMD"),
+            callback: () => {
+                const openFile: TFile | null = this.app.workspace.getActiveFile();
+                if (openFile && openFile.extension === "md") {
+                    this.resetNoteReview(openFile);
+                }
+            },
+        });
+
         this.addSettingTab(new SRSettingTab(this.app, this));
 
         this.app.workspace.onLayoutReady(() => {
@@ -622,6 +633,38 @@ export default class SRPlugin extends Plugin {
                     await this.reviewNextNote(this.lastSelectedReviewDeck);
                 }
             }
+        }
+    }
+
+    async resetNoteReview(note: TFile): Promise<void> {
+        let fileText: string = await this.app.vault.read(note);
+
+        // Remove all sr-* properties from frontmatter
+        const srPropertyRegex = /^---\n((?:.*\n)*?)---/;
+        const match = srPropertyRegex.exec(fileText);
+
+        if (match) {
+            const frontmatter = match[1];
+            // Remove all lines that start with sr-
+            const cleanedFrontmatter = frontmatter
+                .split('\n')
+                .filter(line => !line.trim().startsWith('sr-'))
+                .join('\n');
+
+            // If frontmatter is now empty (only whitespace), remove it entirely
+            if (cleanedFrontmatter.trim() === '') {
+                fileText = fileText.replace(/^---\n(?:.*\n)*?---\n/, '');
+            } else {
+                fileText = fileText.replace(
+                    srPropertyRegex,
+                    `---\n${cleanedFrontmatter}---`
+                );
+            }
+
+            await this.app.vault.modify(note, fileText);
+            new Notice(t("NOTE_RESET"));
+        } else {
+            new Notice(t("NOTE_RESET"));
         }
     }
 
