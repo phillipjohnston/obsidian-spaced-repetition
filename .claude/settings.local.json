@@ -8,7 +8,8 @@
       "Bash(npm audit:*)",
       "Bash(npm ls:*)",
       "Bash(npm uninstall:*)",
-      "Bash(npm prune:*)"
+      "Bash(npm prune:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
