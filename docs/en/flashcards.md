@@ -117,11 +117,11 @@ Note that you can skip a card by simply pressing `S` (case doesn't matter).
 
 To review faster, use the following keyboard shortcuts:
 
--   `Space/Enter` => Show answer
--   `0` => Reset card's progress (Sorta like `Again` in Anki)
--   `1` => Review as `Hard`
--   `2` or `Space` => Review as `Good`
--   `3` => Review as `Easy`
+- `Space/Enter` => Show answer
+- `0` => Reset card's progress (Sorta like `Again` in Anki)
+- `1` => Review as `Hard`
+- `2` or `Space` => Review as `Good`
+- `3` => Review as `Easy`
 
 ### Context
 

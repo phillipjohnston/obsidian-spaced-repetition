@@ -21,6 +21,7 @@ You can select alternative types with the "sr-type" attribute in front-matter:
     - You can specify a custom geometric ease for initial scheduling even with the "sr-ease: -x" frontmatter attribute, where x is your geometric ratio (must be negative for geometric scheduling)
 
 Example front-matter values for scheduling a periodic note with a 15 day interval:
+
 ```
 sr-type: periodic
 sr-interval: 15
@@ -40,7 +41,6 @@ If you want to schedule a note to resurface on a specific day of the week, then 
 - .7 == Saturday
 - .8 == Saturday
 - .9 == Sunday
-
 
 So example, repeat roughly every 30 days, scheduling for the next Tuesday, you would set:
 
@@ -64,6 +64,7 @@ brew install pnpm esbuild
 ```
 
 to set up:
+
 ```
 pnpm install
 ```

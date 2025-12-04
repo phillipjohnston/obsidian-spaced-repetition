@@ -38,7 +38,7 @@ export default {
     CRAM_ALL_CARDS: "Select a deck to cram",
     REVIEW_CARDS_IN_NOTE: "Lernkarten in dieser Notiz wiederholen",
     CRAM_CARDS_IN_NOTE: "Lernkarten in dieser Notiz pauken.",
-STATUS_BAR:
+    STATUS_BAR:
         "Wiederholung: ${dueNotesCount} Notiz(en), ${dueFlashcardsCount} Karte(n) anstehend",
     SYNC_TIME_TAKEN: "Sync dauerte ${t}ms",
     NOTE_IN_IGNORED_FOLDER:

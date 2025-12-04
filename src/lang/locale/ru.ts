@@ -41,7 +41,7 @@ export default {
     REVIEW_ALL_CARDS: "Повторить все карточки во всех заметках",
     REVIEW_CARDS_IN_NOTE: "Повторить карточки в этой заметке",
     CRAM_CARDS_IN_NOTE: "Зубрить карточки в этой заметке",
-STATUS_BAR:
+    STATUS_BAR:
         "Повторить: ${dueNotesCount} заметок(-ки), ${dueFlashcardsCount} карточек(-ки) предстоит",
     SYNC_TIME_TAKEN: "Синхронизация заняла ${t}мс",
     NOTE_IN_IGNORED_FOLDER: "Заметка сохранена в игнорируемую папку (см. настройки).",

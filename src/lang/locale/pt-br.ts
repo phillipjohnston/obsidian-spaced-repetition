@@ -36,7 +36,7 @@ export default {
     CRAM_ALL_CARDS: "Select a deck to cram",
     REVIEW_CARDS_IN_NOTE: "Revisar flashcards nessa nota",
     CRAM_CARDS_IN_NOTE: "Revisar todas as flashcards nessa nota",
-STATUS_BAR:
+    STATUS_BAR:
         "Revisão: ${dueNotesCount} nota(s), ${dueFlashcardsCount} Carta(s) para colocar em dia",
     SYNC_TIME_TAKEN: "Sicronização levou ${t}ms",
     NOTE_IN_IGNORED_FOLDER: "Nota é salva na pasta ignorada (cheque as configurações).",

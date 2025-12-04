@@ -35,7 +35,7 @@ export default {
     CRAM_ALL_CARDS: "選擇要不計難易度復習的牌組",
     REVIEW_ALL_CARDS: "復習所有筆記中的卡片",
     CRAM_CARDS_IN_NOTE: "不計難易度復習此筆記中的卡片",
-STATUS_BAR: "復習: ${dueNotesCount} 筆記, ${dueFlashcardsCount} 卡片已到期",
+    STATUS_BAR: "復習: ${dueNotesCount} 筆記, ${dueFlashcardsCount} 卡片已到期",
     SYNC_TIME_TAKEN: "同步時間 ${t}ms",
     NOTE_IN_IGNORED_FOLDER: "筆記儲存在已被忽略的路徑中（檢查設定選項）。",
     PLEASE_TAG_NOTE: "請將需要復習的筆記中加入正確的標籤（檢查設定選項）。",

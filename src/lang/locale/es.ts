@@ -35,7 +35,7 @@ export default {
     REVIEW_ALL_CARDS: "Revisar tarjetas de todas las notas",
     REVIEW_CARDS_IN_NOTE: "Revisar tarjetas en esta nota",
     CRAM_CARDS_IN_NOTE: "Memorizar tarjetas en esta nota",
-STATUS_BAR: "Revisar: ${dueNotesCount} nota(s), ${dueFlashcardsCount} tarjetas vencidas",
+    STATUS_BAR: "Revisar: ${dueNotesCount} nota(s), ${dueFlashcardsCount} tarjetas vencidas",
     SYNC_TIME_TAKEN: "La sincronización tomó ${t} milisegundos",
     NOTE_IN_IGNORED_FOLDER: "La nota está guardada en un directorio ignorado (revisa los ajustes).",
     PLEASE_TAG_NOTE: "Por favor etiquete apropiadamente la nota para revisión (en los ajustes).",

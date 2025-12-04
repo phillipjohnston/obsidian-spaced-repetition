@@ -8,28 +8,24 @@ import {
     Plugin,
     TAbstractFile,
     TFile,
-    HeadingCache,
     getAllTags,
     FrontMatterCache,
 } from "obsidian";
 import * as graph from "pagerank.js";
 
-import { log_debug, setLogDebugMode } from 'src/logger';
+import { log_debug, setLogDebugMode } from "src/logger";
 
 import { SRSettingTab, SRSettings, DEFAULT_SETTINGS } from "src/settings";
 import { ReviewQueueListView, REVIEW_QUEUE_VIEW_TYPE } from "src/sidebar";
-import { Card, CardType, ReviewResponse, calculateDueDate, schedule, generatePostponeInterval} from "src/scheduling";
 import {
-    YAML_FRONT_MATTER_REGEX,
-    SR_INTERVAL_REGEX,
-    SR_DUE_REGEX,
-    SR_EASE_REGEX
-} from "src/constants";
-import { escapeRegexString } from "src/utils";
+    ReviewResponse,
+    calculateDueDate,
+    schedule,
+    generatePostponeInterval,
+} from "src/scheduling";
 import { ReviewDeck, ReviewDeckSelectionModal, SchedNote, NoteTypes } from "src/review-deck";
 import { RescheduleBacklogModal } from "src/reschedule";
 import { t } from "src/lang/helpers";
-import { parse } from "src/parser";
 import { appIcon } from "src/icons/appicon";
 
 interface PluginData {
@@ -77,7 +73,7 @@ export default class SRPlugin extends Plugin {
         // Configure debug logging based on current setting
         setLogDebugMode(this.data.settings.showDebugMessages);
 
-/* Review notes icon?
+        /* Review notes icon?
         this.addRibbonIcon("SpacedRepIcon", t("REVIEW_CARDS"), async () => {
             if (!this.syncLock) {
                 await this.sync();
@@ -126,13 +122,15 @@ export default class SRPlugin extends Plugin {
         });
 
         this.addCommand({
-            id: 'reschedule-backlog',
-            name: 'Reschedule Backlog',
-            callback: () => {this.openRescheduleBacklogModal()}
+            id: "reschedule-backlog",
+            name: "Reschedule Backlog",
+            callback: () => {
+                this.openRescheduleBacklogModal();
+            },
         });
 
         this.addCommand({
-            id: 'srs-note-review-postpone',
+            id: "srs-note-review-postpone",
             name: t("POSTPONE_NOTE_CMD"),
             callback: () => {
                 const openFile: TFile | null = this.app.workspace.getActiveFile();
@@ -140,10 +138,10 @@ export default class SRPlugin extends Plugin {
                     this.saveReviewResponse(openFile, ReviewResponse.Postpone);
                 }
             },
-        })
+        });
 
         this.addCommand({
-            id: 'srs-note-review-postpone-long',
+            id: "srs-note-review-postpone-long",
             name: t("POSTPONE_LONG_NOTE_CMD"),
             callback: () => {
                 const openFile: TFile | null = this.app.workspace.getActiveFile();
@@ -151,28 +149,27 @@ export default class SRPlugin extends Plugin {
                     this.saveReviewResponse(openFile, ReviewResponse.PostponeLong);
                 }
             },
-        })
+        });
 
         this.addCommand({
-            id: 'srs-note-review-skip',
+            id: "srs-note-review-skip",
             name: t("SKIP_NOTE_CMD"),
             callback: () => {
-                if(this.lastSelectedReviewDeck)
-                {
+                if (this.lastSelectedReviewDeck) {
                     this.reviewDecks[this.lastSelectedReviewDeck].currentIndex++;
                     this.reviewDecks[this.lastSelectedReviewDeck].dueNotesCount--;
                     this.reviewNextNote(this.lastSelectedReviewDeck);
                 }
             },
-        })
+        });
 
         this.addCommand({
-            id: 'srs-note-review-sync',
-            name: 'Rebuild deck index',
+            id: "srs-note-review-sync",
+            name: "Rebuild deck index",
             callback: () => {
                 this.sync();
             },
-        })
+        });
 
         this.addCommand({
             id: "srs-note-review-easy",
@@ -233,7 +230,6 @@ export default class SRPlugin extends Plugin {
     }
 
     async sync(ignoreStats = false): Promise<void> {
-
         // reset notes stuff
         graph.reset();
         this.incomingLinks = {};
@@ -285,7 +281,7 @@ export default class SRPlugin extends Plugin {
             const matchedNoteTags = [];
             let rebalance = true;
 
-             // TODO: allow no-rebalance tag to be configurable
+            // TODO: allow no-rebalance tag to be configurable
             if (tags.some((tag) => tag === "#no-rebalance")) {
                 rebalance = false;
             }
@@ -331,18 +327,21 @@ export default class SRPlugin extends Plugin {
             const interval: number = frontmatter["sr-interval"];
 
             let noteType = NoteTypes.STANDARD;
-            if(ease < 0)
-            {
-                noteType = NoteTypes.GEOMETRIC
-            }
-            else if (ease == 0)
-            {
+            if (ease < 0) {
+                noteType = NoteTypes.GEOMETRIC;
+            } else if (ease == 0) {
                 noteType = NoteTypes.PERIODIC;
             }
 
             for (const matchedNoteTag of matchedNoteTags) {
-                this.reviewDecks[matchedNoteTag].scheduledNotes.push(
-                    { note, dueUnix, ease, noteType, interval, rebalance});
+                this.reviewDecks[matchedNoteTag].scheduledNotes.push({
+                    note,
+                    dueUnix,
+                    ease,
+                    noteType,
+                    interval,
+                    rebalance,
+                });
                 if (dueUnix <= now.valueOf()) {
                     this.reviewDecks[matchedNoteTag].dueNotesCount++;
                 }
@@ -378,18 +377,13 @@ export default class SRPlugin extends Plugin {
                 }),
         );
 
-        if (this.lastSelectedReviewDeck)
-        {
+        if (this.lastSelectedReviewDeck) {
             this.statusBar.setText(
-                `${this.lastSelectedReviewDeck}: ${this.reviewDecks[this.lastSelectedReviewDeck].dueNotesCount} due`
+                `${this.lastSelectedReviewDeck}: ${this.reviewDecks[this.lastSelectedReviewDeck].dueNotesCount} due`,
             );
-        }
-        else
-        {
+        } else {
             // Note that this.dueNotesCount is the total due
-            this.statusBar.setText(
-                `All: ${this.dueNotesCount} due`
-            );
+            this.statusBar.setText(`All: ${this.dueNotesCount} due`);
         }
 
         if (this.data.settings.enableNoteReviewPaneOnStartup) this.reviewQueueView.redraw();
@@ -425,7 +419,6 @@ export default class SRPlugin extends Plugin {
 
         let noteIsNew = false;
 
-        let fileText: string = await this.app.vault.read(note);
         let ease: number, interval: number, delayBeforeReview: number;
         const now: number = Date.now();
         // new note
@@ -437,36 +430,25 @@ export default class SRPlugin extends Plugin {
             )
         ) {
             noteIsNew = true;
-            if(Object.prototype.hasOwnProperty.call(frontmatter, "sr-type"))
-            {
-                let sr_type : string = frontmatter["sr-type"]
-                if(sr_type === "geometric")
-                {
+            if (Object.prototype.hasOwnProperty.call(frontmatter, "sr-type")) {
+                let sr_type: string = frontmatter["sr-type"];
+                if (sr_type === "geometric") {
                     interval = 1;
                     ease = -2.91;
                     delayBeforeReview = 0;
-                }
-                else if(sr_type == "periodic")
-                {
-                    if(Object.prototype.hasOwnProperty.call(frontmatter, "sr-interval"))
-                    {
+                } else if (sr_type == "periodic") {
+                    if (Object.prototype.hasOwnProperty.call(frontmatter, "sr-interval")) {
                         interval = frontmatter["sr-interval"];
-                    }
-                    else
-                    {
+                    } else {
                         interval = 30;
                     }
                     ease = 0;
                     delayBeforeReview = 0;
-                }
-                else
-                {
+                } else {
                     new Notice("sr-type attribute can only be geometric or periodic");
                     return;
                 }
-            }
-            else
-            {
+            } else {
                 let linkTotal = 0,
                     linkPGTotal = 0,
                     totalLinkCount = 0;
@@ -494,8 +476,7 @@ export default class SRPlugin extends Plugin {
                     .valueOf();
         }
 
-        if(response == ReviewResponse.Postpone)
-        {
+        if (response == ReviewResponse.Postpone) {
             // This injects jitter into the rescheduling process, so that you
             // don't postpone every card onto the same day
 
@@ -505,9 +486,7 @@ export default class SRPlugin extends Plugin {
             const postpone_interval = generatePostponeInterval(interval, 10, 5);
             var due = calculateDueDate(postpone_interval, this.data.settings.scheduleWeekends);
             log_debug("Postponing for " + postpone_interval + " days");
-        }
-        else  if(response == ReviewResponse.PostponeLong)
-        {
+        } else if (response == ReviewResponse.PostponeLong) {
             // This injects jitter into the rescheduling process, so that you
             // don't postpone every card onto the same day
             // Note that if you set interval here, you override interval in the
@@ -516,9 +495,7 @@ export default class SRPlugin extends Plugin {
             const postpone_interval = generatePostponeInterval(interval, 25, 7);
             var due = calculateDueDate(postpone_interval, this.data.settings.scheduleWeekends);
             log_debug("Postponing for " + postpone_interval + " days");
-        }
-        else
-        {
+        } else {
             const schedObj: Record<string, number> = schedule(
                 response,
                 interval,
@@ -536,12 +513,10 @@ export default class SRPlugin extends Plugin {
             // notes so that we don't get them all stacked up at once. E.g.,
             // geometric notes in particular are particularly prone to being stacked up
             // as they will progress on the same sequence.
-            if(noteIsNew || ease < 0)
-            {
+            if (noteIsNew || ease < 0) {
                 let variationWindow = 5; // [0,5] variation around the actual
-                                           // due date.
-                if(ease < 0)
-                {
+                // due date.
+                if (ease < 0) {
                     // for now, doubling the variation window for geometric notes
                     variationWindow *= 2;
                 }
@@ -560,72 +535,23 @@ export default class SRPlugin extends Plugin {
 
         const dueString: string = due.format("YYYY-MM-DD");
 
-        // check if scheduling info exists
-        if(SR_INTERVAL_REGEX.test(fileText))
-        {
-            const yaml_info = SR_INTERVAL_REGEX.exec(fileText);
-            fileText = fileText.replace(
-                SR_INTERVAL_REGEX,
-                `---\n${yaml_info[1]}sr-interval: ${interval}\n${yaml_info[3]}---`,
-            );
-        }
-        else
-        {
-            const existingYaml = YAML_FRONT_MATTER_REGEX.exec(fileText);
-            fileText = fileText.replace(
-                YAML_FRONT_MATTER_REGEX,
-                `---\n${existingYaml[1]}sr-interval: ${interval}\n---`,
-            );
-        }
-
-        if(SR_DUE_REGEX.test(fileText))
-        {
-            const yaml_info = SR_DUE_REGEX.exec(fileText);
-            fileText = fileText.replace(
-                SR_DUE_REGEX,
-                `---\n${yaml_info[1]}sr-due: ${dueString}\n${yaml_info[3]}---`,
-            );
-        }
-        else
-        {
-            const existingYaml = YAML_FRONT_MATTER_REGEX.exec(fileText);
-            fileText = fileText.replace(
-                YAML_FRONT_MATTER_REGEX,
-                `---\n${existingYaml[1]}sr-due: ${dueString}\n---`,
-            );
-        }
-
-        if(SR_EASE_REGEX.test(fileText))
-        {
-            const yaml_info = SR_EASE_REGEX.exec(fileText);
-            fileText = fileText.replace(
-                SR_EASE_REGEX,
-                `---\n${yaml_info[1]}sr-ease: ${ease}\n${yaml_info[3]}---`,
-            );
-        }
-        else
-        {
-            const existingYaml = YAML_FRONT_MATTER_REGEX.exec(fileText);
-            fileText = fileText.replace(
-                YAML_FRONT_MATTER_REGEX,
-                `---\n${existingYaml[1]}sr-ease: ${ease}\n---`,
-            );
-        }
-
-        await this.app.vault.modify(note, fileText);
+        // Update frontmatter using Obsidian's API
+        await this.app.fileManager.processFrontMatter(note, (frontmatter) => {
+            frontmatter["sr-interval"] = interval;
+            frontmatter["sr-due"] = dueString;
+            frontmatter["sr-ease"] = ease;
+        });
 
         new Notice(t("RESPONSE_RECEIVED"));
 
         // If there's no deck selected, we still allow the note to be processed,
         // we just don't need to update deck stats
-        if(this.lastSelectedReviewDeck)
-        {
+        if (this.lastSelectedReviewDeck) {
             let deck = this.reviewDecks[this.lastSelectedReviewDeck];
 
             // We only want to advance if we're currently looking at a note in sequence.
             // This avoids us marking a note reviewed that's not in the current review order and advancing the deck.
-            if(note.name === deck.scheduledNotes[deck.currentIndex].note.name)
-            {
+            if (note.name === deck.scheduledNotes[deck.currentIndex].note.name) {
                 deck.currentIndex++;
                 deck.dueNotesCount--;
 
@@ -637,35 +563,17 @@ export default class SRPlugin extends Plugin {
     }
 
     async resetNoteReview(note: TFile): Promise<void> {
-        let fileText: string = await this.app.vault.read(note);
-
-        // Remove all sr-* properties from frontmatter
-        const srPropertyRegex = /^---\n((?:.*\n)*?)---/;
-        const match = srPropertyRegex.exec(fileText);
-
-        if (match) {
-            const frontmatter = match[1];
-            // Remove all lines that start with sr-
-            const cleanedFrontmatter = frontmatter
-                .split('\n')
-                .filter(line => !line.trim().startsWith('sr-'))
-                .join('\n');
-
-            // If frontmatter is now empty (only whitespace), remove it entirely
-            if (cleanedFrontmatter.trim() === '') {
-                fileText = fileText.replace(/^---\n(?:.*\n)*?---\n/, '');
-            } else {
-                fileText = fileText.replace(
-                    srPropertyRegex,
-                    `---\n${cleanedFrontmatter}---`
-                );
+        // Remove all sr-* properties from frontmatter using Obsidian's API
+        await this.app.fileManager.processFrontMatter(note, (frontmatter) => {
+            // Delete all keys that start with "sr-"
+            for (const key of Object.keys(frontmatter)) {
+                if (key.startsWith("sr-")) {
+                    delete frontmatter[key];
+                }
             }
+        });
 
-            await this.app.vault.modify(note, fileText);
-            new Notice(t("NOTE_RESET"));
-        } else {
-            new Notice(t("NOTE_RESET"));
-        }
+        new Notice(t("NOTE_RESET"));
     }
 
     async reviewNextNoteModal(): Promise<void> {
@@ -689,8 +597,7 @@ export default class SRPlugin extends Plugin {
             return;
         }
 
-        if(this.lastSelectedReviewDeck != deckKey)
-        {
+        if (this.lastSelectedReviewDeck != deckKey) {
             this.lastSelectedReviewDeck = deckKey;
             // When switching decks, we should force a sync.
             await this.sync();
@@ -706,7 +613,12 @@ export default class SRPlugin extends Plugin {
             const index = this.data.settings.openRandomNote
                 ? Math.floor(Math.random() * deck.dueNotesCount)
                 : deck.currentIndex;
-            log_debug("[Review] Attempting next note open: due notes, index: " + index + ", note: " + deck.scheduledNotes[index].note.basename);
+            log_debug(
+                "[Review] Attempting next note open: due notes, index: " +
+                    index +
+                    ", note: " +
+                    deck.scheduledNotes[index].note.basename,
+            );
             await this.app.workspace.getLeaf().openFile(deck.scheduledNotes[index].note);
             return;
         }

@@ -35,7 +35,7 @@ export default {
     CRAM_ALL_CARDS: "Select a deck to cram",
     REVIEW_CARDS_IN_NOTE: "Revidovat kartičky v této poznámce.",
     CRAM_CARDS_IN_NOTE: "Cram kartičky v této poznámce.",
-STATUS_BAR: "Revize: ${dueNotesCount} poznámek, ${dueFlashcardsCount} kartiček po termínu",
+    STATUS_BAR: "Revize: ${dueNotesCount} poznámek, ${dueFlashcardsCount} kartiček po termínu",
     SYNC_TIME_TAKEN: "Synchronizace trvala ${t}ms",
     NOTE_IN_IGNORED_FOLDER: "Poznámka je uložena v ignorované složce (zkontrolujte nastavení).",
     PLEASE_TAG_NOTE: "Prosím označne poznámku odpovídajícím tagem pro revizi (v nastavení).",

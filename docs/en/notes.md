@@ -1,9 +1,9 @@
 # Notes
 
--   Notes should be atomic i.e. focus on a single concept.
--   Notes should be highly linked.
--   Reviews should start only after properly understanding a concept.
--   Reviews should be [Feynman-technique](https://fs.blog/2021/02/feynman-learning-technique/)-esque.
+- Notes should be atomic i.e. focus on a single concept.
+- Notes should be highly linked.
+- Reviews should start only after properly understanding a concept.
+- Reviews should be [Feynman-technique](https://fs.blog/2021/02/feynman-learning-technique/)-esque.
 
 ## Getting started
 
@@ -37,8 +37,8 @@ Commands to open a note for review, and making review responses are provided. Yo
 
 Available settings are:
 
--   Choosing whether to open a note at random or the most important note
--   Choosing whether to open the next note automatically after reviewing another
+- Choosing whether to open a note at random or the most important note
+- Choosing whether to open the next note automatically after reviewing another
 
 ## Scheduled notes
 
@@ -48,7 +48,7 @@ Alternatively, one can use the `Open a note for review` command.
 
 ## Review Queue
 
--   Daily review entries are sorted by importance (PageRank)
+- Daily review entries are sorted by importance (PageRank)
 
 ## Incremental Writing
 
@@ -56,8 +56,8 @@ This was introduced [here](https://github.com/st3v3nmw/obsidian-spaced-repetitio
 
 Here are the YouTube videos:
 
--   English: [Obsidian: inbox review with spaced repetition](https://youtu.be/zG5r7QIY_TM)
--   Russian / русский: [Yuliya Bagriy - Разгребатель инбокса заметок как у Andy Matuschak в Obsidian](https://www.youtube.com/watch?v=CF6SSHB74cs)
+- English: [Obsidian: inbox review with spaced repetition](https://youtu.be/zG5r7QIY_TM)
+- Russian / русский: [Yuliya Bagriy - Разгребатель инбокса заметок как у Andy Matuschak в Obsidian](https://www.youtube.com/watch?v=CF6SSHB74cs)
 
 ### Brief summary
 
@@ -65,7 +65,7 @@ Andy Matuschak uses [spaced repetition system for working on writing inbox](http
 
 In short, there are four possible actions (where `x < y`):
 
--   skip note (increase interval for `x`) == mark as `good`
--   work on it, mark as fruitful work (decrease interval) == mark as `hard`
--   work on it, mark as unfruitful work (increase interval for `y`) == mark as `easy`
--   convert to evergreen note (stop using the space-repetition prompts)
+- skip note (increase interval for `x`) == mark as `good`
+- work on it, mark as fruitful work (decrease interval) == mark as `hard`
+- work on it, mark as unfruitful work (increase interval for `y`) == mark as `easy`
+- convert to evergreen note (stop using the space-repetition prompts)

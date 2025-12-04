@@ -6,7 +6,7 @@ export enum NoteTypes {
     ALL,
     STANDARD,
     PERIODIC,
-    GEOMETRIC
+    GEOMETRIC,
 }
 
 export interface SchedNote {
@@ -48,14 +48,12 @@ export class ReviewDeck {
             }
 
             // First by ease
-            if(a.ease != b.ease)
-            {
+            if (a.ease != b.ease) {
                 return a.ease - b.ease;
             }
 
             // Then by interval
-            if(a.interval != b.interval)
-            {
+            if (a.interval != b.interval) {
                 return b.interval - a.interval;
             }
 

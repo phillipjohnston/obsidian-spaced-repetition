@@ -35,7 +35,7 @@ export default {
     CRAM_ALL_CARDS: "选择要集中复习的卡组",
     REVIEW_CARDS_IN_NOTE: "复习此笔记中的卡片",
     CRAM_CARDS_IN_NOTE: "集中复习此笔记中的卡片",
-STATUS_BAR: "复习: ${dueNotesCount} 笔记, ${dueFlashcardsCount} 卡片已到期",
+    STATUS_BAR: "复习: ${dueNotesCount} 笔记, ${dueFlashcardsCount} 卡片已到期",
     SYNC_TIME_TAKEN: "同步时间 ${t}ms",
     NOTE_IN_IGNORED_FOLDER: "笔记保存在已被忽略的路径中（检查设置选项）。",
     PLEASE_TAG_NOTE: "请将需要复习的笔记中加入正确的标签（检查设置选项）。",

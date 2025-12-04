@@ -9,7 +9,7 @@ export enum ReviewResponse {
     Hard,
     Reset,
     Postpone,
-    PostponeLong
+    PostponeLong,
 }
 
 function hasFractionalPart(num) {
@@ -32,62 +32,47 @@ function getFractionalPart(num) {
  * - .7 == Saturday
  * - .8 == Sunday
  * - .9 == Sunday
-*/
-function normalizeDay(input_day)
-{
-    if(input_day == 0)
-    {
+ */
+function normalizeDay(input_day) {
+    if (input_day == 0) {
         return 0;
-    }
-    else if(input_day >= 1 && input_day <= 7)
-    {
+    } else if (input_day >= 1 && input_day <= 7) {
         return input_day - 1;
-    }
-    else
-    {
+    } else {
         return 0;
     }
 }
 
-function adjustToTargetDate(date, targetDay)
-{
+function adjustToTargetDate(date, targetDay) {
     var currentDay = date.day();
     var offset = targetDay - currentDay;
 
-    if (offset > 0)
-    {
-        date = date.add(offset, 'days');
-    }
-    else if (offset < 0)
-    {
-        date = date.add(7 + offset, 'days');
+    if (offset > 0) {
+        date = date.add(offset, "days");
+    } else if (offset < 0) {
+        date = date.add(7 + offset, "days");
     }
 
     return date;
 }
 
-export function calculateDueDate(interval, schedule_weekends = true)
-{
+export function calculateDueDate(interval, schedule_weekends = true) {
     const now = window.moment(Date.now());
 
-    var dueDate = now.add(Math.floor(interval), 'days');
+    var dueDate = now.add(Math.floor(interval), "days");
 
-    if(hasFractionalPart(interval))
-    {
+    if (hasFractionalPart(interval)) {
         // Note that target day via interval takes priority over weekend
         // scheduling options
-        var target_day = normalizeDay(Math.round(getFractionalPart(interval)*10));
+        var target_day = normalizeDay(Math.round(getFractionalPart(interval) * 10));
         dueDate = adjustToTargetDate(dueDate, target_day);
-    }
-    else if(!schedule_weekends && (dueDate.day() == 0 || dueDate.day() == 6))
-    {
+    } else if (!schedule_weekends && (dueDate.day() == 0 || dueDate.day() == 6)) {
         // Generate a random weekday choice (rather than stacking everything
         // on a Monday or Tuesday). Though short intervals WILL land
         // on Monday rather than being pushed super far out.
 
         var targetWeekday = 1;
-        if(interval > 7)
-        {
+        if (interval > 7) {
             targetWeekday = Math.floor(Math.random() * 5) + 1;
         }
         dueDate = adjustToTargetDate(dueDate, targetWeekday);
@@ -96,18 +81,16 @@ export function calculateDueDate(interval, schedule_weekends = true)
     return dueDate;
 }
 
-
 // Interval is the note's default interval, which is currently used for fractional part
 // Postpone base is the starting number for the postponement random date generation
 // Postpone_window represents variation around the postpone date.
 //  e.g., a window of 5 means a random option of [-5, 5] days offset from the base.
-export function generatePostponeInterval(interval, postpone_base, postpone_window)
-{
-    var postpone_interval = postpone_base + (Math.round(Math.random() * (2 * postpone_window) - postpone_window));
-    postpone_interval += getFractionalPart(interval)
+export function generatePostponeInterval(interval, postpone_base, postpone_window) {
+    var postpone_interval =
+        postpone_base + Math.round(Math.random() * (2 * postpone_window) - postpone_window);
+    postpone_interval += getFractionalPart(interval);
     return postpone_interval;
 }
-
 
 export function schedule(
     response: ReviewResponse,
@@ -120,8 +103,7 @@ export function schedule(
     delayBeforeReview = Math.max(0, Math.floor(delayBeforeReview / (24 * 3600 * 1000)));
 
     // This represents normal SRS behavior
-    if(ease > 0)
-    {
+    if (ease > 0) {
         if (response === ReviewResponse.Easy) {
             ease += 20;
             interval = ((interval + delayBeforeReview) * ease) / 100;
@@ -164,10 +146,8 @@ export function schedule(
             dueDates[interval]++;
         }
 
-        interval = Math.round(interval * 10) / 10
-    }
-    else if(ease == 0)
-    {
+        interval = Math.round(interval * 10) / 10;
+    } else if (ease == 0) {
         // When ease is zero, we just review a note on a periodic basis.
 
         // Easy and hard adjust the periodic interval, but we have to be careful
@@ -179,9 +159,7 @@ export function schedule(
             var fractional = getFractionalPart(interval);
             interval = Math.round(Math.floor(interval) * 0.5) + fractional;
         }
-    }
-    else
-    {
+    } else {
         // The goal here is a geometric series that allows for greatly increasing expansion of intervals
         // so that we reduce our iteration.
         // Idea comes from gwern: https://gwern.net/note/statistic#program-for-non-spaced-repetition-review-of-past-written-materials-for-serendipity-rediscovery-archive-revisiter
@@ -209,12 +187,9 @@ export function schedule(
 
         // Special case for the first interval: we'll go to our planned initial review point,
         // which is 30 days out
-        if(interval == 1)
-        {
+        if (interval == 1) {
             interval = 30;
-        }
-        else
-        {
+        } else {
             // The -1 multiplication is because ease is marked negative to
             // indicate a geometric progression.
             //
@@ -222,8 +197,8 @@ export function schedule(
             // We DON'T want to incorporate delay before review
             // because we just want the interval to progress normally, rather than
             // increasing because there was a small delay in reviewing.
-           var fractional = getFractionalPart(interval);
-           interval =  Math.floor(Math.floor((interval)) * (-1 * ease)) + fractional;
+            var fractional = getFractionalPart(interval);
+            interval = Math.floor(Math.floor(interval) * (-1 * ease)) + fractional;
         }
     }
 

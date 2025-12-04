@@ -35,7 +35,7 @@ export default {
     CRAM_ALL_CARDS: "Select a deck to cram",
     REVIEW_CARDS_IN_NOTE: "이 노트의 플래시카드들을 리뷰합니다",
     CRAM_CARDS_IN_NOTE: "이 노트의 플래시카드들을 벼락치기합니다.",
-STATUS_BAR: "--리뷰: ${dueNotesCount} 노트, ${dueFlashcardsCount} 카드 남았습니다.",
+    STATUS_BAR: "--리뷰: ${dueNotesCount} 노트, ${dueFlashcardsCount} 카드 남았습니다.",
     SYNC_TIME_TAKEN: "동기화에 ${t}밀리초 걸렸습니다",
     NOTE_IN_IGNORED_FOLDER: "노트가 무시된 폴더 아래에 저장되어 있습니다. (설정을 확인해주세요)",
     PLEASE_TAG_NOTE: "리뷰를 하기위해 노트에 적절히 태그해주세요. (설정을 확인해주세요)",

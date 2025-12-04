@@ -1,7 +1,7 @@
 import { Notice, PluginSettingTab, Setting, App, Platform } from "obsidian";
 import type SRPlugin from "src/main";
 import { t } from "src/lang/helpers";
-import { setLogDebugMode } from 'src/logger';
+import { setLogDebugMode } from "src/logger";
 
 export interface SRSettings {
     // notes

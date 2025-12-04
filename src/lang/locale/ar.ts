@@ -35,7 +35,7 @@ export default {
     REVIEW_ALL_CARDS: "مراجعة البطاقات من جميع الملاحظات",
     REVIEW_CARDS_IN_NOTE: "مراجعة البطاقات  من هذه الملاحظة",
     CRAM_CARDS_IN_NOTE: "أحشر جميع بطاقات هذه الملاحظة",
-STATUS_BAR: "البطاقات المستحقة ${dueFlashcardsCount},ملاحظات ${dueNotesCount}:مراجعة",
+    STATUS_BAR: "البطاقات المستحقة ${dueFlashcardsCount},ملاحظات ${dueNotesCount}:مراجعة",
     SYNC_TIME_TAKEN: "${t}ms استغراق المزامنة",
     NOTE_IN_IGNORED_FOLDER: ".الملاحظة يتم حفظها ضمن المجلد الذي تم تجاهله (تحقق من الإعدادات)",
     PLEASE_TAG_NOTE: ".يرجى وضع وسم على الملاحظة بشكل مناسب للمراجعة (في الإعدادات)",

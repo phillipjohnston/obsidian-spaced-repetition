@@ -25,10 +25,10 @@ If applicable, add screenshots to help explain the bug. This could be the logs i
 
 **Versions (please complete the following information):**
 
--   OS: [e.g. iOS]
--   Obsidian version: [e.g. v0.12.4]
--   Plugin version: [e.g. v1.4.9]
--   If on desktop, Installer version: [run `this.navigator.appVersion` on the developer console, e.g. `5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) obsidian/0.12.3 Chrome/89.0.4389.128 Electron/12.0.6 Safari/537.36"`]
+- OS: [e.g. iOS]
+- Obsidian version: [e.g. v0.12.4]
+- Plugin version: [e.g. v1.4.9]
+- If on desktop, Installer version: [run `this.navigator.appVersion` on the developer console, e.g. `5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) obsidian/0.12.3 Chrome/89.0.4389.128 Electron/12.0.6 Safari/537.36"`]
 
 **Additional context**
 Add any other context about the problem here (e.g. the markdown producing the error).
