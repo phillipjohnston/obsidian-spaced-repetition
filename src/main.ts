@@ -3,14 +3,7 @@
 // - remove pageranks
 // - gut/simplify Locale support
 
-import {
-    Notice,
-    Plugin,
-    TAbstractFile,
-    TFile,
-    getAllTags,
-    FrontMatterCache,
-} from "obsidian";
+import { Notice, Plugin, TAbstractFile, TFile, getAllTags, FrontMatterCache } from "obsidian";
 import * as graph from "pagerank.js";
 
 import { log_debug, setLogDebugMode } from "src/logger";
@@ -542,6 +535,47 @@ export default class SRPlugin extends Plugin {
             frontmatter["sr-ease"] = ease;
         });
 
+        // Update in-memory deck data to avoid needing a full sync on deck change
+        const newDueUnix = due.valueOf();
+        const newNoteType =
+            ease < 0 ? NoteTypes.GEOMETRIC : ease === 0 ? NoteTypes.PERIODIC : NoteTypes.STANDARD;
+
+        // Update the note in all decks that contain it
+        for (const deckKey in this.reviewDecks) {
+            const deck = this.reviewDecks[deckKey];
+            const noteIndex = deck.scheduledNotes.findIndex((sn) => sn.note.path === note.path);
+
+            if (noteIndex !== -1) {
+                const oldDueUnix = deck.scheduledNotes[noteIndex].dueUnix;
+                const wasOverdue = oldDueUnix <= now;
+                const isNowOverdue = newDueUnix <= now;
+
+                // Update the note's data
+                deck.scheduledNotes[noteIndex].dueUnix = newDueUnix;
+                deck.scheduledNotes[noteIndex].ease = ease;
+                deck.scheduledNotes[noteIndex].interval = interval;
+                deck.scheduledNotes[noteIndex].noteType = newNoteType;
+
+                // Update due counts if status changed
+                if (wasOverdue && !isNowOverdue) {
+                    // Note is no longer overdue
+                    if (deckKey === this.lastSelectedReviewDeck) {
+                        // dueNotesCount already decremented below
+                    } else {
+                        deck.dueNotesCount--;
+                    }
+                    this.dueNotesCount--;
+                } else if (!wasOverdue && isNowOverdue) {
+                    // Note became overdue (shouldn't normally happen)
+                    deck.dueNotesCount++;
+                    this.dueNotesCount++;
+                }
+
+                // Re-sort the deck to maintain proper order
+                deck.sortScheduledNotes();
+            }
+        }
+
         new Notice(t("RESPONSE_RECEIVED"));
 
         // If there's no deck selected, we still allow the note to be processed,
@@ -599,9 +633,13 @@ export default class SRPlugin extends Plugin {
 
         if (this.lastSelectedReviewDeck != deckKey) {
             this.lastSelectedReviewDeck = deckKey;
-            // When switching decks, we should force a sync.
-            await this.sync();
-            // Note that sync() will reset the currentIndex for all decks
+
+            // Update status bar for the new deck
+            const newDeck = this.reviewDecks[deckKey];
+            this.statusBar.setText(`${deckKey}: ${newDeck.dueNotesCount} due`);
+
+            // Reset current index when switching decks
+            newDeck.currentIndex = 0;
         }
 
         const deck = this.reviewDecks[deckKey];

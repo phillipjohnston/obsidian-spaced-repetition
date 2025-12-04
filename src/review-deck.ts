@@ -13,7 +13,7 @@ export interface SchedNote {
     note: TFile;
     dueUnix: number;
     ease: number;
-    type: NoteTypes;
+    noteType: NoteTypes;
     interval: number;
     rebalance: boolean;
 }
