@@ -535,6 +535,24 @@ export default class SRPlugin extends Plugin {
             frontmatter["sr-ease"] = ease;
         });
 
+        new Notice(t("RESPONSE_RECEIVED"));
+
+        // Check if we should advance to next note BEFORE updating deck data
+        // (since sorting will change the order)
+        let shouldAdvance = false;
+        if (this.lastSelectedReviewDeck) {
+            const currentDeck = this.reviewDecks[this.lastSelectedReviewDeck];
+            // We only want to advance if we're currently looking at a note in sequence.
+            if (
+                currentDeck.scheduledNotes[currentDeck.currentIndex] &&
+                note.name === currentDeck.scheduledNotes[currentDeck.currentIndex].note.name
+            ) {
+                shouldAdvance = true;
+                currentDeck.currentIndex++;
+                currentDeck.dueNotesCount--;
+            }
+        }
+
         // Update in-memory deck data to avoid needing a full sync on deck change
         const newDueUnix = due.valueOf();
         const newNoteType =
@@ -560,7 +578,7 @@ export default class SRPlugin extends Plugin {
                 if (wasOverdue && !isNowOverdue) {
                     // Note is no longer overdue
                     if (deckKey === this.lastSelectedReviewDeck) {
-                        // dueNotesCount already decremented below
+                        // dueNotesCount already decremented above
                     } else {
                         deck.dueNotesCount--;
                     }
@@ -576,23 +594,9 @@ export default class SRPlugin extends Plugin {
             }
         }
 
-        new Notice(t("RESPONSE_RECEIVED"));
-
-        // If there's no deck selected, we still allow the note to be processed,
-        // we just don't need to update deck stats
-        if (this.lastSelectedReviewDeck) {
-            let deck = this.reviewDecks[this.lastSelectedReviewDeck];
-
-            // We only want to advance if we're currently looking at a note in sequence.
-            // This avoids us marking a note reviewed that's not in the current review order and advancing the deck.
-            if (note.name === deck.scheduledNotes[deck.currentIndex].note.name) {
-                deck.currentIndex++;
-                deck.dueNotesCount--;
-
-                if (this.data.settings.autoNextNote) {
-                    await this.reviewNextNote(this.lastSelectedReviewDeck);
-                }
-            }
+        // Advance to next note if auto-advance is enabled
+        if (shouldAdvance && this.data.settings.autoNextNote) {
+            await this.reviewNextNote(this.lastSelectedReviewDeck);
         }
     }
 
