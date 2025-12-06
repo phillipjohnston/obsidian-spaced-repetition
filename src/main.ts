@@ -3,7 +3,15 @@
 // - remove pageranks
 // - gut/simplify Locale support
 
-import { Notice, Plugin, TAbstractFile, TFile, getAllTags, FrontMatterCache } from "obsidian";
+import {
+    Notice,
+    Plugin,
+    TAbstractFile,
+    TFile,
+    TFolder,
+    getAllTags,
+    FrontMatterCache,
+} from "obsidian";
 import * as graph from "pagerank.js";
 
 import { log_debug, setLogDebugMode } from "src/logger";
@@ -99,6 +107,14 @@ export default class SRPlugin extends Plugin {
                                 .setIcon("SpacedRepIcon")
                                 .onClick(() => {
                                     this.saveReviewResponse(fileish, ReviewResponse.Hard);
+                                });
+                        });
+                    } else if (fileish instanceof TFolder) {
+                        menu.addItem((item) => {
+                            item.setTitle("Review All Cards in Folder")
+                                .setIcon("SpacedRepIcon")
+                                .onClick(async () => {
+                                    await this.reviewFolderCards(fileish);
                                 });
                         });
                     }
@@ -674,6 +690,124 @@ export default class SRPlugin extends Plugin {
         }
 
         new Notice(t("ALL_CAUGHT_UP"));
+    }
+
+    private collectFolderNotes(folder: TFolder, recursive = true): TFile[] {
+        const folderNotes: TFile[] = [];
+
+        const collectFiles = (currentFolder: TFolder) => {
+            for (const file of currentFolder.children) {
+                if (file instanceof TFile && file.extension === "md") {
+                    // Check if this file is in an ignored folder
+                    if (
+                        this.data.settings.noteFoldersToIgnore.some((ignoredFolder) =>
+                            file.path.startsWith(ignoredFolder),
+                        )
+                    ) {
+                        continue;
+                    }
+
+                    // Check if file is a review card
+                    const fileCached = this.app.metadataCache.getFileCache(file) || {};
+                    const tags = getAllTags(fileCached) || [];
+
+                    const isReviewCard = tags.some((tag) =>
+                        this.data.settings.tagsToReview.some(
+                            (tagToReview) =>
+                                tag === tagToReview || tag.startsWith(tagToReview + "/"),
+                        ),
+                    );
+
+                    if (isReviewCard) {
+                        folderNotes.push(file);
+                    }
+                } else if (recursive && file instanceof TFolder) {
+                    collectFiles(file); // Recursion for subfolders
+                }
+            }
+        };
+
+        collectFiles(folder);
+        return folderNotes;
+    }
+
+    private async reviewFolderCards(folder: TFolder): Promise<void> {
+        const folderNotes = this.collectFolderNotes(folder);
+
+        if (folderNotes.length === 0) {
+            new Notice("No review cards found in this folder");
+            return;
+        }
+
+        // Create temporary deck key
+        const tempDeckKey = `__folder:${folder.path}`;
+
+        // Create review deck
+        const tempDeck = new ReviewDeck(tempDeckKey);
+
+        // Populate with folder notes
+        const now = window.moment(Date.now());
+        for (const note of folderNotes) {
+            const fileCachedData = this.app.metadataCache.getFileCache(note) || {};
+            const frontmatter: FrontMatterCache | Record<string, unknown> =
+                fileCachedData.frontmatter || {};
+
+            if (
+                Object.prototype.hasOwnProperty.call(frontmatter, "sr-due") &&
+                Object.prototype.hasOwnProperty.call(frontmatter, "sr-interval") &&
+                Object.prototype.hasOwnProperty.call(frontmatter, "sr-ease")
+            ) {
+                // Scheduled note
+                const dueUnix = window
+                    .moment(frontmatter["sr-due"], ["YYYY-MM-DD", "DD-MM-YYYY", "ddd MMM DD YYYY"])
+                    .valueOf();
+
+                const ease: number = frontmatter["sr-ease"];
+                const interval: number = frontmatter["sr-interval"];
+
+                let noteType = NoteTypes.STANDARD;
+                if (ease < 0) {
+                    noteType = NoteTypes.GEOMETRIC;
+                } else if (ease === 0) {
+                    noteType = NoteTypes.PERIODIC;
+                }
+
+                const tags = getAllTags(fileCachedData) || [];
+                let rebalance = true;
+                if (tags.some((tag) => tag === "#no-rebalance")) {
+                    rebalance = false;
+                }
+
+                tempDeck.scheduledNotes.push({
+                    note,
+                    dueUnix,
+                    ease,
+                    noteType,
+                    interval,
+                    rebalance,
+                });
+
+                if (dueUnix <= now.valueOf()) {
+                    tempDeck.dueNotesCount++;
+                }
+            } else {
+                // New note
+                tempDeck.newNotes.push(note);
+            }
+        }
+
+        // Sort the deck
+        tempDeck.sortNewNotes(this.pageranks);
+        tempDeck.sortScheduledNotes();
+
+        // Temporarily add to decks and review
+        this.reviewDecks[tempDeckKey] = tempDeck;
+
+        new Notice(
+            `Starting review: ${tempDeck.dueNotesCount} due, ${tempDeck.newNotes.length} new (${folderNotes.length} total)`,
+        );
+
+        await this.reviewNextNote(tempDeckKey);
     }
 
     findDeckPath(note: TFile): string[] {
