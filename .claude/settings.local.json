@@ -1,22 +1,23 @@
 {
-    "permissions": {
-        "allow": [
-            "Bash(npm audit fix:*)",
-            "Bash(npm view:*)",
-            "Bash(npm install:*)",
-            "Bash(npm search:*)",
-            "Bash(npm audit:*)",
-            "Bash(npm ls:*)",
-            "Bash(npm uninstall:*)",
-            "Bash(npm prune:*)",
-            "Bash(grep:*)",
-            "Bash(npm run build:*)",
-            "Bash(npm run lint:*)",
-            "Bash(npm run format:*)",
-            "Bash(cat:*)",
-            "Bash(find:*)"
-        ],
-        "deny": [],
-        "ask": []
-    }
+  "permissions": {
+    "allow": [
+      "Bash(npm audit fix:*)",
+      "Bash(npm view:*)",
+      "Bash(npm install:*)",
+      "Bash(npm search:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm prune:*)",
+      "Bash(grep:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run format:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(npm test:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
 }
