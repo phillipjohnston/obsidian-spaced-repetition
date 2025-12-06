@@ -39,10 +39,6 @@ const DEFAULT_DATA: PluginData = {
     historyDeck: null,
 };
 
-export interface LinkStat {
-    sourcePath: string;
-    linkCount: number;
-}
 
 export default class SRPlugin extends Plugin {
     private statusBar: HTMLElement;
@@ -54,7 +50,6 @@ export default class SRPlugin extends Plugin {
 
     public newNotes: TFile[] = [];
     public scheduledNotes: SchedNote[] = [];
-    private incomingLinks: Record<string, LinkStat[]> = {};
     private dueNotesCount = 0;
     public dueDatesNotes: Record<number, number> = {}; // Record<# of days in future, due count>
 
@@ -77,14 +72,6 @@ export default class SRPlugin extends Plugin {
         // Configure debug logging based on current setting
         setLogDebugMode(this.data.settings.showDebugMessages);
 
-        /* Review notes icon?
-        this.addRibbonIcon("SpacedRepIcon", t("REVIEW_CARDS"), async () => {
-            if (!this.syncLock) {
-                await this.sync();
-                new FlashcardModal(this.app, this).open();
-            }
-        });
-*/
         if (!this.data.settings.disableFileMenuReviewOptions) {
             this.registerEvent(
                 this.app.workspace.on("file-menu", (menu, fileish: TAbstractFile) => {
@@ -409,7 +396,6 @@ export default class SRPlugin extends Plugin {
         };
 
         // Reset everything
-        this.incomingLinks = {};
         this.reviewDecks = {};
         this.dueNotesCount = 0;
         this.dueDatesNotes = {};
@@ -425,26 +411,6 @@ export default class SRPlugin extends Plugin {
             // Build cached note
             const cachedNote = await this.buildCachedNote(note);
             this.cache.notes[note.path] = cachedNote;
-
-            // Build incoming links tracking (for compatibility)
-            if (this.incomingLinks[note.path] === undefined) {
-                this.incomingLinks[note.path] = [];
-            }
-
-            const links = this.app.metadataCache.resolvedLinks[note.path] || {};
-            for (const targetPath in links) {
-                if (this.incomingLinks[targetPath] === undefined) {
-                    this.incomingLinks[targetPath] = [];
-                }
-
-                // markdown files only
-                if (targetPath.endsWith(".md")) {
-                    this.incomingLinks[targetPath].push({
-                        sourcePath: note.path,
-                        linkCount: links[targetPath],
-                    });
-                }
-            }
         }
 
         // Phase 2: Build review decks from cache
@@ -917,30 +883,6 @@ export default class SRPlugin extends Plugin {
         await this.reviewNextNote(tempDeckKey);
     }
 
-    findDeckPath(note: TFile): string[] {
-        let deckPath: string[] = [];
-        if (this.data.settings.convertFoldersToDecks) {
-            deckPath = note.path.split("/");
-            deckPath.pop(); // remove filename
-            if (deckPath.length === 0) {
-                deckPath = ["/"];
-            }
-        } else {
-            const fileCachedData = this.app.metadataCache.getFileCache(note) || {};
-            const tags = getAllTags(fileCachedData) || [];
-
-            outer: for (const tagToReview of this.data.settings.flashcardTags) {
-                for (const tag of tags) {
-                    if (tag === tagToReview || tag.startsWith(tagToReview + "/")) {
-                        deckPath = tag.substring(1).split("/");
-                        break outer;
-                    }
-                }
-            }
-        }
-
-        return deckPath;
-    }
 
     // Cache Management Methods
 

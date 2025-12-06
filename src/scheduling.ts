@@ -207,21 +207,3 @@ export function schedule(
     return { interval, ease };
 }
 
-export function textInterval(interval: number, isMobile: boolean): string {
-    if (interval === undefined) {
-        return t("NEW");
-    }
-
-    const m: number = Math.round(interval / 3.04375) / 10,
-        y: number = Math.round(interval / 36.525) / 10;
-
-    if (isMobile) {
-        if (m < 1.0) return t("DAYS_STR_IVL_MOBILE", { interval });
-        else if (y < 1.0) return t("MONTHS_STR_IVL_MOBILE", { interval: m });
-        else return t("YEARS_STR_IVL_MOBILE", { interval: y });
-    } else {
-        if (m < 1.0) return t("DAYS_STR_IVL", { interval });
-        else if (y < 1.0) return t("MONTHS_STR_IVL", { interval: m });
-        else return t("YEARS_STR_IVL", { interval: y });
-    }
-}

@@ -1,30 +1,8 @@
 // English
 
 export default {
-    // flashcard-modal.tsx
-    DECKS: "Decks",
-    DUE_CARDS: "Due Cards",
-    NEW_CARDS: "New Cards",
-    TOTAL_CARDS: "Total Cards",
-    BACK: "Back",
-    SKIP: "Skip",
-    EDIT_CARD: "Edit Card",
-    RESET_CARD_PROGRESS: "Reset card's progress",
-    HARD: "Hard",
-    GOOD: "Good",
-    EASY: "Easy",
-    SHOW_ANSWER: "Show Answer",
-    CARD_PROGRESS_RESET: "Card's progress has been reset.",
-    SAVE: "Save",
-    CANCEL: "Cancel",
-    NO_INPUT: "No input provided.",
-    CURRENT_EASE_HELP_TEXT: "Current Ease: ",
-    CURRENT_INTERVAL_HELP_TEXT: "Current Interval: ",
-    CARD_GENERATED_FROM: "Generated from: ${notePath}",
-
     // main.ts
     OPEN_NOTE_FOR_REVIEW: "Open a note for review",
-    REVIEW_CARDS: "Review flashcards",
     REVIEW_EASY_FILE_MENU: "Review: Easy",
     REVIEW_GOOD_FILE_MENU: "Review: Good",
     REVIEW_HARD_FILE_MENU: "Review: Hard",
@@ -35,13 +13,6 @@ export default {
     POSTPONE_NOTE_CMD: "Postpone note review",
     POSTPONE_LONG_NOTE_CMD: "Postpone note review (long)",
     SKIP_NOTE_CMD: "Skip note review",
-    SYNC_CMD: "Resync deck status",
-    CRAM_ALL_CARDS: "Select a deck to cram",
-    REVIEW_ALL_CARDS: "Review flashcards from all notes",
-    REVIEW_CARDS_IN_NOTE: "Review flashcards in this note",
-    CRAM_CARDS_IN_NOTE: "Cram flashcards in this note",
-    STATUS_BAR: "Review: ${dueNotesCount} note(s) due",
-    SYNC_TIME_TAKEN: "Sync took ${t}ms",
     NOTE_IN_IGNORED_FOLDER: "Note is saved under ignored folder (check settings).",
     PLEASE_TAG_NOTE: "Please tag the note appropriately for reviewing (in settings).",
     RESPONSE_RECEIVED: "Response received.",
@@ -49,56 +20,11 @@ export default {
     NO_DECK_EXISTS: "No deck exists for ${deckName}",
     ALL_CAUGHT_UP: "You're all caught up now :D.",
 
-    // scheduling.ts
-    DAYS_STR_IVL: "${interval} day(s)",
-    MONTHS_STR_IVL: "${interval} month(s)",
-    YEARS_STR_IVL: "${interval} year(s)",
-    DAYS_STR_IVL_MOBILE: "${interval}d",
-    MONTHS_STR_IVL_MOBILE: "${interval}m",
-    YEARS_STR_IVL_MOBILE: "${interval}y",
-
     // settings.ts
     SETTINGS_HEADER: "Spaced Repetition Plugin - Settings",
     CHECK_WIKI: 'For more information, check the <a href="${wiki_url}">wiki</a>.',
     FOLDERS_TO_IGNORE: "Folders to ignore",
     FOLDERS_TO_IGNORE_DESC: "Enter folder paths separated by newlines i.e. Templates Meta/Scripts",
-    FLASHCARDS: "Flashcards",
-    FLASHCARD_EASY_LABEL: "Easy Button Text",
-    FLASHCARD_GOOD_LABEL: "Good Button Text",
-    FLASHCARD_HARD_LABEL: "Hard Button Text",
-    FLASHCARD_EASY_DESC: 'Customize the label for the "Easy" Button',
-    FLASHCARD_GOOD_DESC: 'Customize the label for the "Good" Button',
-    FLASHCARD_HARD_DESC: 'Customize the label for the "Hard" Button',
-    FLASHCARD_TAGS: "Flashcard tags",
-    FLASHCARD_TAGS_DESC:
-        "Enter tags separated by spaces or newlines i.e. #flashcards #deck2 #deck3.",
-    CONVERT_FOLDERS_TO_DECKS: "Convert folders to decks and subdecks?",
-    CONVERT_FOLDERS_TO_DECKS_DESC: "This is an alternative to the Flashcard tags option above.",
-    INLINE_SCHEDULING_COMMENTS:
-        "Save scheduling comment on the same line as the flashcard's last line?",
-    INLINE_SCHEDULING_COMMENTS_DESC:
-        "Turning this on will make the HTML comments not break list formatting.",
-    BURY_SIBLINGS_TILL_NEXT_DAY: "Bury sibling cards until the next day?",
-    BURY_SIBLINGS_TILL_NEXT_DAY_DESC:
-        "Siblings are cards generated from the same card text i.e. cloze deletions",
-    SHOW_CARD_CONTEXT: "Show context in cards?",
-    SHOW_CARD_CONTEXT_DESC: "i.e. Title > Heading 1 > Subheading > ... > Subheading",
-    CARD_MODAL_HEIGHT_PERCENT: "Flashcard Height Percentage",
-    CARD_MODAL_SIZE_PERCENT_DESC:
-        "Should be set to 100% on mobile or if you have very large images",
-    RESET_DEFAULT: "Reset to default",
-    CARD_MODAL_WIDTH_PERCENT: "Flashcard Width Percentage",
-    RANDOMIZE_CARD_ORDER: "Randomize card order during review?",
-    DISABLE_CLOZE_CARDS: "Disable cloze cards?",
-    CONVERT_HIGHLIGHTS_TO_CLOZES: "Convert ==hightlights== to clozes?",
-    CONVERT_BOLD_TEXT_TO_CLOZES: "Convert **bolded text** to clozes?",
-    CONVERT_CURLY_BRACKETS_TO_CLOZES: "Convert {{curly brackets}} to clozes?",
-    INLINE_CARDS_SEPARATOR: "Separator for inline flashcards",
-    FIX_SEPARATORS_MANUALLY_WARNING:
-        "Note that after changing this you have to manually edit any flashcards you already have.",
-    INLINE_REVERSED_CARDS_SEPARATOR: "Separator for inline reversed flashcards",
-    MULTILINE_CARDS_SEPARATOR: "Separator for multiline flashcards",
-    MULTILINE_REVERSED_CARDS_SEPARATOR: "Separator for multiline reversed flashcards",
     NOTES: "Notes",
     REVIEW_PANE_ON_STARTUP: "Enable note review pane on startup",
     TAGS_TO_REVIEW: "Tags to review",
@@ -137,6 +63,7 @@ export default {
         "Maximum contribution of the weighted ease of linked notes to the initial ease.",
     LOGGING: "Logging",
     DISPLAY_DEBUG_INFO: "Display debugging information on the developer console?",
+    RESET_DEFAULT: "Reset to default",
 
     // sidebar.ts
     NOTES_REVIEW_QUEUE: "Notes Review Queue",
