@@ -12,6 +12,7 @@ package-lock.json
 # Generated files
 data.json
 main.js
+cache.json
 
 # yarn
 yarn-error.log
