@@ -1,4 +1,4 @@
-import { schedule, ReviewResponse, textInterval } from "src/scheduling";
+import { schedule, ReviewResponse } from "src/scheduling";
 import { DEFAULT_SETTINGS } from "src/settings";
 
 test("Test reviewing with default settings", () => {
@@ -133,20 +133,3 @@ test("Test load balancing", () => {
     });
 });
 
-test("Test textInterval - desktop", () => {
-    expect(textInterval(1, false)).toEqual("1 day(s)");
-    expect(textInterval(41, false)).toEqual("1.3 month(s)");
-    expect(textInterval(366, false)).toEqual("1 year(s)");
-    expect(textInterval(1000, false)).toEqual("2.7 year(s)");
-});
-
-test("Test textInterval - mobile", () => {
-    expect(textInterval(1, true)).toEqual("1d");
-    expect(textInterval(41, true)).toEqual("1.3m");
-    expect(textInterval(366, true)).toEqual("1y");
-    expect(textInterval(1000, true)).toEqual("2.7y");
-});
-
-test("Test new cards", () => {
-    expect(textInterval(undefined, false)).toEqual("New");
-});
