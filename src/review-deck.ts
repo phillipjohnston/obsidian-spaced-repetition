@@ -31,11 +31,9 @@ export class ReviewDeck {
         this.activeFolders = new Set([this.deckName, t("TODAY")]);
     }
 
-    public sortNewNotes(pageranks: Record<string, number>): void {
-        // sort new notes by importance
-        this.newNotes = this.newNotes.sort(
-            (a: TFile, b: TFile) => (pageranks[b.path] || 0) - (pageranks[a.path] || 0),
-        );
+    public sortNewNotes(): void {
+        // sort new notes by most recently modified (newest first)
+        this.newNotes = this.newNotes.sort((a: TFile, b: TFile) => b.stat.mtime - a.stat.mtime);
     }
 
     public sortScheduledNotes(): void {

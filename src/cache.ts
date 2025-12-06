@@ -1,6 +1,6 @@
 import { NoteTypes } from "src/review-deck";
 
-export const CACHE_VERSION = 1;
+export const CACHE_VERSION = 2; // Bumped version since we removed PageRank
 
 export interface CachedNote {
     path: string;
@@ -13,7 +13,6 @@ export interface CachedNote {
         noteType: NoteTypes;
         rebalance: boolean;
     } | null;
-    outgoingLinks: string[];
     mtime: number;
 }
 
@@ -22,10 +21,6 @@ export interface ReviewCache {
     vaultPath: string;
     noteCount: number;
     notes: Record<string, CachedNote>;
-    pageranks: {
-        scores: Record<string, number>;
-        isStale: boolean;
-    };
     settings: {
         tagsToReview: string[];
         noteFoldersToIgnore: string[];

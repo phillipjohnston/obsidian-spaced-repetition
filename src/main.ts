@@ -12,7 +12,6 @@ import {
     getAllTags,
     FrontMatterCache,
 } from "obsidian";
-import * as graph from "pagerank.js";
 
 import { log_debug, setLogDebugMode } from "src/logger";
 
@@ -56,14 +55,12 @@ export default class SRPlugin extends Plugin {
     public newNotes: TFile[] = [];
     public scheduledNotes: SchedNote[] = [];
     private incomingLinks: Record<string, LinkStat[]> = {};
-    private pageranks: Record<string, number> = {};
     private dueNotesCount = 0;
     public dueDatesNotes: Record<number, number> = {}; // Record<# of days in future, due count>
 
     // Cache-related properties
     private cache: ReviewCache | null = null;
     private cacheSaveTimer: number = 0;
-    private pagerankStale: boolean = true;
 
     async onload(): Promise<void> {
         await this.loadPluginData();
@@ -390,12 +387,9 @@ export default class SRPlugin extends Plugin {
             }
         }
 
-        // Load PageRanks from cache (will be recalculated lazily if stale)
-        this.pageranks = this.cache.pageranks.scores;
-        this.pagerankStale = this.cache.pageranks.isStale;
-
-        // Sort decks (defer new notes sorting until PageRank needed)
+        // Sort decks
         for (const deckKey in this.reviewDecks) {
+            this.reviewDecks[deckKey].sortNewNotes();
             this.reviewDecks[deckKey].sortScheduledNotes();
         }
     }
@@ -407,10 +401,6 @@ export default class SRPlugin extends Plugin {
             vaultPath: this.app.vault.getRoot().path,
             noteCount: 0,
             notes: {},
-            pageranks: {
-                scores: {},
-                isStale: false,
-            },
             settings: {
                 tagsToReview: [...this.data.settings.tagsToReview],
                 noteFoldersToIgnore: [...this.data.settings.noteFoldersToIgnore],
@@ -419,14 +409,13 @@ export default class SRPlugin extends Plugin {
         };
 
         // Reset everything
-        graph.reset();
         this.incomingLinks = {};
         this.reviewDecks = {};
         this.dueNotesCount = 0;
         this.dueDatesNotes = {};
 
         const now = window.moment(Date.now());
-        // Phase 1: Build cache and link graph
+        // Phase 1: Build cache
         const notes: TFile[] = this.app.vault.getMarkdownFiles();
         for (const note of notes) {
             if (this.isFileIgnored(note.path)) {
@@ -454,22 +443,11 @@ export default class SRPlugin extends Plugin {
                         sourcePath: note.path,
                         linkCount: links[targetPath],
                     });
-
-                    // Build link graph for PageRank
-                    graph.link(note.path, targetPath, links[targetPath]);
                 }
             }
         }
 
-        // Phase 2: Calculate PageRanks
-        log_debug("[Sync] Computing PageRanks...");
-        graph.rank(0.85, 0.000001, (node: string, rank: number) => {
-            this.cache.pageranks.scores[node] = rank * 10000;
-        });
-        this.pageranks = this.cache.pageranks.scores;
-        this.pagerankStale = false;
-
-        // Phase 3: Build review decks from cache
+        // Phase 2: Build review decks from cache
         for (const cachedNote of Object.values(this.cache.notes)) {
             if (cachedNote.reviewTags.length === 0) {
                 continue;
@@ -517,10 +495,10 @@ export default class SRPlugin extends Plugin {
             }
         }
 
-        // Phase 4: Sort decks
+        // Phase 3: Sort decks
         log_debug(`[Sync] Sorting ${Object.keys(this.reviewDecks).length} decks...`);
         for (const deckKey in this.reviewDecks) {
-            this.reviewDecks[deckKey].sortNewNotes(this.pageranks);
+            this.reviewDecks[deckKey].sortNewNotes();
             this.reviewDecks[deckKey].sortScheduledNotes();
         }
 
@@ -760,9 +738,6 @@ export default class SRPlugin extends Plugin {
     }
 
     async reviewNextNoteModal(): Promise<void> {
-        // Ensure PageRanks are fresh before showing notes
-        await this.recalculatePageRanksIfNeeded();
-
         const reviewDeckNames: string[] = Object.keys(this.reviewDecks);
         if (reviewDeckNames.length === 1) {
             this.reviewNextNote(reviewDeckNames[0]);
@@ -929,7 +904,7 @@ export default class SRPlugin extends Plugin {
         }
 
         // Sort the deck
-        tempDeck.sortNewNotes(this.pageranks);
+        tempDeck.sortNewNotes();
         tempDeck.sortScheduledNotes();
 
         // Temporarily add to decks and review
@@ -980,7 +955,7 @@ export default class SRPlugin extends Plugin {
             const cache: ReviewCache = JSON.parse(data);
 
             // Validate structure
-            if (!cache.version || !cache.notes || !cache.pageranks) {
+            if (!cache.version || !cache.notes) {
                 log_debug("[Cache] Corrupted cache structure, invalidating");
                 return null;
             }
@@ -1109,29 +1084,17 @@ export default class SRPlugin extends Plugin {
             };
         }
 
-        // Extract outgoing links
-        const links = this.app.metadataCache.resolvedLinks[file.path] || {};
-        const outgoingLinks = Object.keys(links).filter((path) => path.endsWith(".md"));
-
         return {
             path: file.path,
             tags,
             reviewTags,
             scheduling,
-            outgoingLinks,
             mtime: file.stat.mtime,
         };
     }
 
     private isFileIgnored(path: string): boolean {
         return this.data.settings.noteFoldersToIgnore.some((folder) => path.startsWith(folder));
-    }
-
-    private markPageRanksStale(): void {
-        this.pagerankStale = true;
-        if (this.cache) {
-            this.cache.pageranks.isStale = true;
-        }
     }
 
     // Event Handlers for Incremental Cache Updates
@@ -1144,24 +1107,14 @@ export default class SRPlugin extends Plugin {
             // Was it previously cached? Remove it
             if (this.cache.notes[file.path]) {
                 delete this.cache.notes[file.path];
-                this.markPageRanksStale();
                 await this.saveCache();
             }
             return;
         }
 
         // Update cached note
-        const oldNote = this.cache.notes[file.path];
         const cachedNote = await this.buildCachedNote(file);
         this.cache.notes[file.path] = cachedNote;
-
-        // Check if links changed
-        if (
-            oldNote &&
-            JSON.stringify(oldNote.outgoingLinks) !== JSON.stringify(cachedNote.outgoingLinks)
-        ) {
-            this.markPageRanksStale();
-        }
 
         // Schedule cache save
         await this.saveCache();
@@ -1175,9 +1128,6 @@ export default class SRPlugin extends Plugin {
 
         // Remove from cache
         delete this.cache.notes[path];
-        if (this.cache.pageranks.scores[path]) {
-            delete this.cache.pageranks.scores[path];
-        }
 
         // Remove from review decks
         for (const deckKey in this.reviewDecks) {
@@ -1199,9 +1149,6 @@ export default class SRPlugin extends Plugin {
                 }
             }
         }
-
-        // Mark PageRanks stale
-        this.markPageRanksStale();
 
         // Update status bar
         this.updateStatusBar();
@@ -1228,23 +1175,6 @@ export default class SRPlugin extends Plugin {
             ...oldCachedNote,
             path: newPath,
         };
-
-        // Update PageRank key
-        if (this.cache.pageranks.scores[oldPath]) {
-            this.cache.pageranks.scores[newPath] = this.cache.pageranks.scores[oldPath];
-            delete this.cache.pageranks.scores[oldPath];
-        }
-
-        // Update all incoming links in cache
-        for (const cachedNote of Object.values(this.cache.notes)) {
-            const index = cachedNote.outgoingLinks.indexOf(oldPath);
-            if (index !== -1) {
-                cachedNote.outgoingLinks[index] = newPath;
-            }
-        }
-
-        // Mark PageRanks stale (structure changed)
-        this.markPageRanksStale();
 
         // Update review decks in memory
         for (const deckKey in this.reviewDecks) {
@@ -1274,44 +1204,6 @@ export default class SRPlugin extends Plugin {
         setTimeout(async () => {
             await this.onFileMetadataChanged(file);
         }, 500);
-    }
-
-    // Lazy PageRank Recalculation
-
-    async recalculatePageRanksIfNeeded(): Promise<void> {
-        if (!this.pagerankStale || !this.cache) return;
-
-        const startTime = Date.now();
-        log_debug("[PageRank] Recalculating...");
-
-        graph.reset();
-
-        // Rebuild from cache
-        for (const cachedNote of Object.values(this.cache.notes)) {
-            for (const target of cachedNote.outgoingLinks) {
-                if (target.endsWith(".md")) {
-                    graph.link(cachedNote.path, target, 1);
-                }
-            }
-        }
-
-        // Compute PageRank
-        this.pageranks = {};
-        graph.rank(0.85, 0.000001, (node: string, rank: number) => {
-            this.pageranks[node] = rank * 10000;
-        });
-
-        // Update cache
-        this.cache.pageranks.scores = this.pageranks;
-        this.cache.pageranks.isStale = false;
-        this.pagerankStale = false;
-
-        log_debug(`[PageRank] Recalculated in ${Date.now() - startTime}ms`);
-
-        // Re-sort new notes in all decks
-        for (const deckKey in this.reviewDecks) {
-            this.reviewDecks[deckKey].sortNewNotes(this.pageranks);
-        }
     }
 
     async loadPluginData(): Promise<void> {
