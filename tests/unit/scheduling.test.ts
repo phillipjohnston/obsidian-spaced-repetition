@@ -48,7 +48,7 @@ test("Test reviewing with default settings & delay", () => {
     });
 });
 
-test("Test load balancing, small interval (load balancing disabled)", () => {
+test("Test load balancing, small interval", () => {
     const dueDates = {
         0: 1,
         1: 1,
@@ -59,13 +59,14 @@ test("Test load balancing, small interval (load balancing disabled)", () => {
         schedule(ReviewResponse.Good, 1, DEFAULT_SETTINGS.baseEase, 0, DEFAULT_SETTINGS, dueDates),
     ).toEqual({
         ease: DEFAULT_SETTINGS.baseEase,
-        interval: 3,
+        interval: 4,
     });
     expect(dueDates).toEqual({
         0: 1,
         1: 1,
         2: 1,
-        3: 5,
+        3: 4,
+        4: 1,
     });
 });
 

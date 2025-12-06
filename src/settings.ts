@@ -43,6 +43,8 @@ export const DEFAULT_SETTINGS: SRSettings = {
     easyBonus: 1.3,
     maximumInterval: 36525,
     maxLinkFactor: 1.0,
+    // logging
+    showDebugMessages: false,
 };
 
 // https://github.com/mgmeyers/obsidian-kanban/blob/main/src/Settings.ts

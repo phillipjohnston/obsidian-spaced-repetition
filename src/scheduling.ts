@@ -12,11 +12,11 @@ export enum ReviewResponse {
     PostponeLong,
 }
 
-function hasFractionalPart(num) {
+function hasFractionalPart(num: number): boolean {
     return num !== Math.floor(num);
 }
 
-function getFractionalPart(num) {
+function getFractionalPart(num: number): number {
     return num - Math.floor(num);
 }
 
@@ -33,7 +33,7 @@ function getFractionalPart(num) {
  * - .8 == Sunday
  * - .9 == Sunday
  */
-function normalizeDay(input_day) {
+function normalizeDay(input_day: number): number {
     if (input_day == 0) {
         return 0;
     } else if (input_day >= 1 && input_day <= 7) {
@@ -43,7 +43,7 @@ function normalizeDay(input_day) {
     }
 }
 
-function adjustToTargetDate(date, targetDay) {
+function adjustToTargetDate(date: any, targetDay: number): any {
     var currentDay = date.day();
     var offset = targetDay - currentDay;
 
@@ -56,7 +56,7 @@ function adjustToTargetDate(date, targetDay) {
     return date;
 }
 
-export function calculateDueDate(interval, schedule_weekends = true) {
+export function calculateDueDate(interval: number, schedule_weekends = true): any {
     const now = window.moment(Date.now());
 
     var dueDate = now.add(Math.floor(interval), "days");
@@ -85,7 +85,7 @@ export function calculateDueDate(interval, schedule_weekends = true) {
 // Postpone base is the starting number for the postponement random date generation
 // Postpone_window represents variation around the postpone date.
 //  e.g., a window of 5 means a random option of [-5, 5] days offset from the base.
-export function generatePostponeInterval(interval, postpone_base, postpone_window) {
+export function generatePostponeInterval(interval: number, postpone_base: number, postpone_window: number): number {
     var postpone_interval =
         postpone_base + Math.round(Math.random() * (2 * postpone_window) - postpone_window);
     postpone_interval += getFractionalPart(interval);
