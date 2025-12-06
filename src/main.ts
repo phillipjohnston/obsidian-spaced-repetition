@@ -386,11 +386,17 @@ export default class SRPlugin extends Plugin {
                 }),
         );
 
-        if (this.lastSelectedReviewDeck) {
+        // Check if lastSelectedReviewDeck still exists (it might be a temporary folder deck)
+        if (
+            this.lastSelectedReviewDeck &&
+            Object.prototype.hasOwnProperty.call(this.reviewDecks, this.lastSelectedReviewDeck)
+        ) {
             this.statusBar.setText(
                 `${this.lastSelectedReviewDeck}: ${this.reviewDecks[this.lastSelectedReviewDeck].dueNotesCount} due`,
             );
         } else {
+            // Clear lastSelectedReviewDeck if it no longer exists (e.g., temporary folder deck)
+            this.lastSelectedReviewDeck = null;
             // Note that this.dueNotesCount is the total due
             this.statusBar.setText(`All: ${this.dueNotesCount} due`);
         }
