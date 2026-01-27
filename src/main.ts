@@ -754,7 +754,7 @@ export default class SRPlugin extends Plugin {
         if (deck.dueNotesCount > 0) {
             const index = this.data.settings.openRandomNote
                 ? Math.floor(Math.random() * deck.dueNotesCount)
-                : deck.currentIndex;
+                : Math.min(deck.currentIndex, deck.dueNotesCount - 1);
             log_debug(
                 "[Review] Attempting next note open: due notes, index: " +
                     index +
