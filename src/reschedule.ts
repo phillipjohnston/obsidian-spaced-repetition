@@ -74,10 +74,10 @@ async function rewrite_due_date(app: App, note: SchedNote, newDate: Date) {
 
 async function rescheduleNotes(
     app: App,
-    deckList: ReviewDeck[],
-    deck: ReviewDeck,
-    noteType: int,
-    days: int,
+    deckList: { [deckKey: string]: ReviewDeck },
+    deck: string,
+    noteType: NoteTypes,
+    days: number,
     includeWeekends: boolean,
 ) {
     log_debug(
@@ -183,14 +183,14 @@ async function rescheduleNotes(
 }
 
 export class RescheduleBacklogModal extends Modal {
-    rescheduleDays: int;
+    rescheduleDays: number;
     rescheduleNoteType: NoteTypes;
     rescheduleIncludesWeekends: boolean;
     rescheduleDeck: string;
     deckKeys: string[];
-    deckList: ReviewDeck[];
+    deckList: { [deckKey: string]: ReviewDeck };
 
-    constructor(app: App, deckList: ReviewDeck[]) {
+    constructor(app: App, deckList: { [deckKey: string]: ReviewDeck }) {
         super(app);
         this.rescheduleDays = 7;
         this.rescheduleNoteType = NoteTypes.ALL;
@@ -224,18 +224,18 @@ export class RescheduleBacklogModal extends Modal {
             .setName("Note Type")
             .setDesc("Select the note types to reschedule.")
             .addDropdown((dropDown) => {
-                dropDown.addOption(NoteTypes.ALL, "All");
-                dropDown.addOption(NoteTypes.STANDARD, "Standard");
-                dropDown.addOption(NoteTypes.PERIODIC, "Periodic");
-                dropDown.addOption(NoteTypes.GEOMETRIC, "Geometric");
+                dropDown.addOption(String(NoteTypes.ALL), "All");
+                dropDown.addOption(String(NoteTypes.STANDARD), "Standard");
+                dropDown.addOption(String(NoteTypes.PERIODIC), "Periodic");
+                dropDown.addOption(String(NoteTypes.GEOMETRIC), "Geometric");
                 dropDown.onChange((value) => {
-                    this.rescheduleNoteType = value;
+                    this.rescheduleNoteType = parseInt(value) as NoteTypes;
                 });
             });
 
         new Setting(contentEl).setName("Days to spread over").addText((text) =>
             text.setValue("7").onChange((value) => {
-                this.rescheduleDays = value;
+                this.rescheduleDays = parseInt(value) || 7;
             }),
         );
 
@@ -243,11 +243,9 @@ export class RescheduleBacklogModal extends Modal {
             .setName("Include weekends?")
             .setDesc("Determine whether notes will be rescheduled for weekends.")
             .addDropdown((dropDown) => {
-                dropDown.addOption(true, "Yes");
-                dropDown.addOption(false, "No");
+                dropDown.addOption("true", "Yes");
+                dropDown.addOption("false", "No");
                 dropDown.onChange((value) => {
-                    // This is converting to a string, even though I'm using
-                    // a bool type. So we convert back to a bool.
                     this.rescheduleIncludesWeekends = value === "true";
                 });
             });
