@@ -13,6 +13,8 @@ export interface SRSettings {
     scheduleWeekends: boolean;
     disableFileMenuReviewOptions: boolean;
     maxNDaysNotesReviewQueue: number;
+    // filtering
+    highIntervalThreshold: number;
     // UI preferences
     initiallyExpandAllSubdecksInTree: boolean;
     // algorithm
@@ -35,6 +37,8 @@ export const DEFAULT_SETTINGS: SRSettings = {
     scheduleWeekends: false,
     disableFileMenuReviewOptions: false,
     maxNDaysNotesReviewQueue: 365,
+    // filtering
+    highIntervalThreshold: 180,
     // UI settings
     initiallyExpandAllSubdecksInTree: false,
     // algorithm
@@ -186,6 +190,46 @@ export class SRSettingTab extends PluginSettingTab {
                     .onClick(async () => {
                         this.plugin.data.settings.maxNDaysNotesReviewQueue =
                             DEFAULT_SETTINGS.maxNDaysNotesReviewQueue;
+                        await this.plugin.savePluginData();
+                        this.display();
+                    });
+            });
+
+        new Setting(containerEl)
+            .setName("High interval threshold")
+            .setDesc(
+                "Minimum interval (in days) for notes to appear in 'Review High-Interval Notes' command.",
+            )
+            .addText((text) =>
+                text
+                    .setValue(this.plugin.data.settings.highIntervalThreshold.toString())
+                    .onChange((value) => {
+                        applySettingsUpdate(async () => {
+                            const numValue: number = Number.parseInt(value);
+                            if (!isNaN(numValue)) {
+                                if (numValue < 1) {
+                                    new Notice("Value must be at least 1");
+                                    text.setValue(
+                                        this.plugin.data.settings.highIntervalThreshold.toString(),
+                                    );
+                                    return;
+                                }
+
+                                this.plugin.data.settings.highIntervalThreshold = numValue;
+                                await this.plugin.savePluginData();
+                            } else {
+                                new Notice(t("VALID_NUMBER_WARNING"));
+                            }
+                        });
+                    }),
+            )
+            .addExtraButton((button) => {
+                button
+                    .setIcon("reset")
+                    .setTooltip(t("RESET_DEFAULT"))
+                    .onClick(async () => {
+                        this.plugin.data.settings.highIntervalThreshold =
+                            DEFAULT_SETTINGS.highIntervalThreshold;
                         await this.plugin.savePluginData();
                         this.display();
                     });

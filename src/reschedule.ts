@@ -79,6 +79,8 @@ async function rescheduleNotes(
     noteType: NoteTypes,
     days: number,
     includeWeekends: boolean,
+    minInterval: number | null,
+    maxInterval: number | null,
 ) {
     log_debug(
         "[Reschedule] Request submitted with deck: " +
@@ -88,7 +90,11 @@ async function rescheduleNotes(
             " rescheduleNoteType: " +
             noteType +
             " Reschedule on weekends: " +
-            includeWeekends,
+            includeWeekends +
+            " minInterval: " +
+            minInterval +
+            " maxInterval: " +
+            maxInterval,
     );
 
     if (days == 0) {
@@ -124,12 +130,24 @@ async function rescheduleNotes(
 
         let validIndices = [];
 
+        // Helper to check if note passes interval filter
+        const passesIntervalFilter = (note: SchedNote): boolean => {
+            if (minInterval !== null && note.interval < minInterval) {
+                return false;
+            }
+            if (maxInterval !== null && note.interval > maxInterval) {
+                return false;
+            }
+            return true;
+        };
+
         if (noteType == NoteTypes.ALL) {
             // TODO: can probably be simplified, but this lets the rest of the
             // logic be consistent for now
             // Populate validIndices with a count from 0 to pastDueCount - 1
             for (let i = 0; i < pastDueCount; i++) {
-                if (deck.scheduledNotes[i].rebalance) {
+                let note = deck.scheduledNotes[i];
+                if (note.rebalance && passesIntervalFilter(note)) {
                     validIndices.push(i);
                 }
             }
@@ -137,13 +155,13 @@ async function rescheduleNotes(
             log_debug("[Review] Filtering past due for note type: " + noteType);
             for (let i = 0; i < pastDueCount; i++) {
                 let note = deck.scheduledNotes[i];
-                if (note.noteType == noteType && note.rebalance) {
+                if (note.noteType == noteType && note.rebalance && passesIntervalFilter(note)) {
                     validIndices.push(i);
                 }
             }
         }
 
-        log_debug("[Review] Past due count after filtering by note type: " + validIndices.length);
+        log_debug("[Review] Past due count after filtering: " + validIndices.length);
 
         let reschedulePerDayTarget = Math.floor(validIndices.length / days);
         let dateDelta = 1;
@@ -189,6 +207,8 @@ export class RescheduleBacklogModal extends Modal {
     rescheduleDeck: string;
     deckKeys: string[];
     deckList: { [deckKey: string]: ReviewDeck };
+    minInterval: number | null;
+    maxInterval: number | null;
 
     constructor(app: App, deckList: { [deckKey: string]: ReviewDeck }) {
         super(app);
@@ -197,6 +217,8 @@ export class RescheduleBacklogModal extends Modal {
         this.rescheduleIncludesWeekends = true;
         this.rescheduleDeck = "all";
         this.deckKeys = Object.keys(deckList);
+        this.minInterval = null;
+        this.maxInterval = null;
 
         // TODO: double confirm that this does not make a copy
         this.deckList = deckList;
@@ -250,6 +272,26 @@ export class RescheduleBacklogModal extends Modal {
                 });
             });
 
+        new Setting(contentEl)
+            .setName("Minimum interval (days)")
+            .setDesc("Only reschedule notes with interval >= this value. Leave empty for no minimum.")
+            .addText((text) =>
+                text.setPlaceholder("No minimum").onChange((value) => {
+                    const numValue = parseInt(value);
+                    this.minInterval = isNaN(numValue) ? null : numValue;
+                }),
+            );
+
+        new Setting(contentEl)
+            .setName("Maximum interval (days)")
+            .setDesc("Only reschedule notes with interval <= this value. Leave empty for no maximum.")
+            .addText((text) =>
+                text.setPlaceholder("No maximum").onChange((value) => {
+                    const numValue = parseInt(value);
+                    this.maxInterval = isNaN(numValue) ? null : numValue;
+                }),
+            );
+
         new Setting(contentEl).addButton((btn) =>
             btn
                 .setButtonText("Reschedule")
@@ -263,6 +305,8 @@ export class RescheduleBacklogModal extends Modal {
                         this.rescheduleNoteType,
                         this.rescheduleDays,
                         this.rescheduleIncludesWeekends,
+                        this.minInterval,
+                        this.maxInterval,
                     );
                     this.close();
                     // TODO: pass to the rescheduler

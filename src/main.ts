@@ -257,6 +257,14 @@ export default class SRPlugin extends Plugin {
             },
         });
 
+        this.addCommand({
+            id: "srs-note-review-high-interval",
+            name: "Review High-Interval Notes",
+            callback: async () => {
+                await this.reviewHighIntervalNotes();
+            },
+        });
+
         this.addSettingTab(new SRSettingTab(this.app, this));
 
         this.app.workspace.onLayoutReady(() => {
@@ -881,6 +889,63 @@ export default class SRPlugin extends Plugin {
 
         new Notice(
             `Starting review: ${tempDeck.dueNotesCount} due, ${tempDeck.newNotes.length} new (${folderNotes.length} total)`,
+        );
+
+        await this.reviewNextNote(tempDeckKey);
+    }
+
+    private async reviewHighIntervalNotes(): Promise<void> {
+        const threshold = this.data.settings.highIntervalThreshold;
+        const now = window.moment(Date.now());
+        const nowUnix = now.valueOf();
+
+        // Create temporary deck key
+        const tempDeckKey = `__highInterval:${threshold}+`;
+
+        // Create review deck
+        const tempDeck = new ReviewDeck(tempDeckKey);
+
+        // Collect high-interval due notes from all decks
+        const seenPaths = new Set<string>();
+
+        for (const deckKey in this.reviewDecks) {
+            const deck = this.reviewDecks[deckKey];
+
+            for (const sNote of deck.scheduledNotes) {
+                // Skip if we've already added this note (could be in multiple decks)
+                if (seenPaths.has(sNote.note.path)) {
+                    continue;
+                }
+
+                // Only include notes that are due and have interval >= threshold
+                if (sNote.dueUnix <= nowUnix && sNote.interval >= threshold) {
+                    seenPaths.add(sNote.note.path);
+                    tempDeck.scheduledNotes.push({
+                        note: sNote.note,
+                        dueUnix: sNote.dueUnix,
+                        ease: sNote.ease,
+                        noteType: sNote.noteType,
+                        interval: sNote.interval,
+                        rebalance: sNote.rebalance,
+                    });
+                    tempDeck.dueNotesCount++;
+                }
+            }
+        }
+
+        if (tempDeck.scheduledNotes.length === 0) {
+            new Notice(`No due notes with interval >= ${threshold} days`);
+            return;
+        }
+
+        // Sort the deck
+        tempDeck.sortScheduledNotes();
+
+        // Temporarily add to decks and review
+        this.reviewDecks[tempDeckKey] = tempDeck;
+
+        new Notice(
+            `Starting high-interval review: ${tempDeck.dueNotesCount} notes with interval >= ${threshold} days`,
         );
 
         await this.reviewNextNote(tempDeckKey);
