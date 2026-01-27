@@ -683,6 +683,9 @@ export default class SRPlugin extends Plugin {
             }
         }
 
+        // Update status bar to reflect new count
+        this.updateStatusBar();
+
         // Advance to next note if auto-advance is enabled
         if (shouldAdvance && this.data.settings.autoNextNote) {
             await this.reviewNextNote(this.lastSelectedReviewDeck);
