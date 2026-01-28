@@ -185,10 +185,9 @@ export function schedule(
             ease *= 0.5;
         }
 
-        // Special case for the first interval: we'll go to our planned initial review point,
-        // which is 30 days out
+        // Special case for the first interval: we'll go to our planned initial review point
         if (interval == 1) {
-            interval = 30;
+            interval = settingsObj.geometricNoteFirstReviewInterval;
         } else {
             // The -1 multiplication is because ease is marked negative to
             // indicate a geometric progression.

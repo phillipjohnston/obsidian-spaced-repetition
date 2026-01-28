@@ -23,6 +23,9 @@ export interface SRSettings {
     easyBonus: number;
     maximumInterval: number;
     maxLinkFactor: number;
+    geometricNoteFactor: number;
+    geometricNoteFirstReviewInterval: number;
+    periodicNoteDefaultInterval: number;
     // logging
     showDebugMessages: boolean;
 }
@@ -47,6 +50,9 @@ export const DEFAULT_SETTINGS: SRSettings = {
     easyBonus: 1.3,
     maximumInterval: 36525,
     maxLinkFactor: 1.0,
+    geometricNoteFactor: 2.91,
+    geometricNoteFirstReviewInterval: 30,
+    periodicNoteDefaultInterval: 30,
     // logging
     showDebugMessages: false,
 };
@@ -406,6 +412,120 @@ export class SRSettingTab extends PluginSettingTab {
                     .setTooltip(t("RESET_DEFAULT"))
                     .onClick(async () => {
                         this.plugin.data.settings.maxLinkFactor = DEFAULT_SETTINGS.maxLinkFactor;
+                        await this.plugin.savePluginData();
+                        this.display();
+                    });
+            });
+
+        new Setting(containerEl)
+            .setName(t("GEOMETRIC_NOTE_FACTOR"))
+            .setDesc(t("GEOMETRIC_NOTE_FACTOR_DESC"))
+            .addText((text) =>
+                text
+                    .setValue(this.plugin.data.settings.geometricNoteFactor.toString())
+                    .onChange((value) => {
+                        applySettingsUpdate(async () => {
+                            const numValue: number = Number.parseFloat(value);
+                            if (!isNaN(numValue)) {
+                                if (numValue <= 1.01) {
+                                    new Notice(t("GEOMETRIC_NOTE_FACTOR_MIN_WARNING"));
+                                    text.setValue(
+                                        this.plugin.data.settings.geometricNoteFactor.toString(),
+                                    );
+                                    return;
+                                }
+
+                                this.plugin.data.settings.geometricNoteFactor = numValue;
+                                await this.plugin.savePluginData();
+                            } else {
+                                new Notice(t("VALID_NUMBER_WARNING"));
+                            }
+                        });
+                    }),
+            )
+            .addExtraButton((button) => {
+                button
+                    .setIcon("reset")
+                    .setTooltip(t("RESET_DEFAULT"))
+                    .onClick(async () => {
+                        this.plugin.data.settings.geometricNoteFactor =
+                            DEFAULT_SETTINGS.geometricNoteFactor;
+                        await this.plugin.savePluginData();
+                        this.display();
+                    });
+            });
+
+        new Setting(containerEl)
+            .setName(t("GEOMETRIC_NOTE_FIRST_REVIEW_INTERVAL"))
+            .setDesc(t("GEOMETRIC_NOTE_FIRST_REVIEW_INTERVAL_DESC"))
+            .addText((text) =>
+                text
+                    .setValue(this.plugin.data.settings.geometricNoteFirstReviewInterval.toString())
+                    .onChange((value) => {
+                        applySettingsUpdate(async () => {
+                            const numValue: number = Number.parseInt(value);
+                            if (!isNaN(numValue)) {
+                                if (numValue < 1) {
+                                    new Notice(t("GEOMETRIC_NOTE_FIRST_REVIEW_INTERVAL_MIN_WARNING"));
+                                    text.setValue(
+                                        this.plugin.data.settings.geometricNoteFirstReviewInterval.toString(),
+                                    );
+                                    return;
+                                }
+
+                                this.plugin.data.settings.geometricNoteFirstReviewInterval = numValue;
+                                await this.plugin.savePluginData();
+                            } else {
+                                new Notice(t("VALID_NUMBER_WARNING"));
+                            }
+                        });
+                    }),
+            )
+            .addExtraButton((button) => {
+                button
+                    .setIcon("reset")
+                    .setTooltip(t("RESET_DEFAULT"))
+                    .onClick(async () => {
+                        this.plugin.data.settings.geometricNoteFirstReviewInterval =
+                            DEFAULT_SETTINGS.geometricNoteFirstReviewInterval;
+                        await this.plugin.savePluginData();
+                        this.display();
+                    });
+            });
+
+        new Setting(containerEl)
+            .setName(t("PERIODIC_NOTE_DEFAULT_INTERVAL"))
+            .setDesc(t("PERIODIC_NOTE_DEFAULT_INTERVAL_DESC"))
+            .addText((text) =>
+                text
+                    .setValue(this.plugin.data.settings.periodicNoteDefaultInterval.toString())
+                    .onChange((value) => {
+                        applySettingsUpdate(async () => {
+                            const numValue: number = Number.parseInt(value);
+                            if (!isNaN(numValue)) {
+                                if (numValue < 1) {
+                                    new Notice(t("PERIODIC_NOTE_DEFAULT_INTERVAL_MIN_WARNING"));
+                                    text.setValue(
+                                        this.plugin.data.settings.periodicNoteDefaultInterval.toString(),
+                                    );
+                                    return;
+                                }
+
+                                this.plugin.data.settings.periodicNoteDefaultInterval = numValue;
+                                await this.plugin.savePluginData();
+                            } else {
+                                new Notice(t("VALID_NUMBER_WARNING"));
+                            }
+                        });
+                    }),
+            )
+            .addExtraButton((button) => {
+                button
+                    .setIcon("reset")
+                    .setTooltip(t("RESET_DEFAULT"))
+                    .onClick(async () => {
+                        this.plugin.data.settings.periodicNoteDefaultInterval =
+                            DEFAULT_SETTINGS.periodicNoteDefaultInterval;
                         await this.plugin.savePluginData();
                         this.display();
                     });

@@ -524,13 +524,13 @@ export default class SRPlugin extends Plugin {
                 let sr_type: string = frontmatter["sr-type"];
                 if (sr_type === "geometric") {
                     interval = 1;
-                    ease = -2.91;
+                    ease = -this.data.settings.geometricNoteFactor;
                     delayBeforeReview = 0;
                 } else if (sr_type == "periodic") {
                     if (Object.prototype.hasOwnProperty.call(frontmatter, "sr-interval")) {
                         interval = frontmatter["sr-interval"];
                     } else {
-                        interval = 30;
+                        interval = this.data.settings.periodicNoteDefaultInterval;
                     }
                     ease = 0;
                     delayBeforeReview = 0;

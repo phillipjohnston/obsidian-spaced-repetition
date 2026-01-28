@@ -61,6 +61,18 @@ export default {
     MAX_LINK_CONTRIB: "Maximum link contribution",
     MAX_LINK_CONTRIB_DESC:
         "Maximum contribution of the weighted ease of linked notes to the initial ease.",
+    GEOMETRIC_NOTE_FACTOR: "Geometric note factor",
+    GEOMETRIC_NOTE_FACTOR_DESC:
+        "The multiplication factor for geometric note intervals (default = 2.91, based on gwern's research)",
+    GEOMETRIC_NOTE_FACTOR_MIN_WARNING: "The factor must be at least 1.01.",
+    GEOMETRIC_NOTE_FIRST_REVIEW_INTERVAL: "Geometric note first review interval",
+    GEOMETRIC_NOTE_FIRST_REVIEW_INTERVAL_DESC:
+        "The interval (in days) for the first review of geometric notes after the initial quick review (default = 30 days)",
+    GEOMETRIC_NOTE_FIRST_REVIEW_INTERVAL_MIN_WARNING: "The interval must be at least 1 day.",
+    PERIODIC_NOTE_DEFAULT_INTERVAL: "Periodic note default interval",
+    PERIODIC_NOTE_DEFAULT_INTERVAL_DESC:
+        "The default review interval (in days) for new periodic notes when not specified in frontmatter (default = 30 days)",
+    PERIODIC_NOTE_DEFAULT_INTERVAL_MIN_WARNING: "The interval must be at least 1 day.",
     LOGGING: "Logging",
     DISPLAY_DEBUG_INFO: "Display debugging information on the developer console?",
     RESET_DEFAULT: "Reset to default",
