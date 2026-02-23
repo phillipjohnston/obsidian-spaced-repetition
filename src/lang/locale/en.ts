@@ -92,4 +92,6 @@ export default {
     DUE_TODAY_NEW: "New",
     DUE_TODAY_EMPTY: "Nothing due today",
     DUE_TODAY_COUNT: "${count} due",
+    DUE_TODAY_SHOW_NEW_NOTES: "Show new notes in Due Today pane",
+    DUE_TODAY_SHOW_NEW_NOTES_DESC: "When enabled, unscheduled (new) notes are shown in the Due Today pane alongside scheduled notes.",
 };

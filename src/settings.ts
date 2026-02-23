@@ -17,6 +17,7 @@ export interface SRSettings {
     highIntervalThreshold: number;
     // UI preferences
     initiallyExpandAllSubdecksInTree: boolean;
+    dueTodayShowNewNotes: boolean;
     // algorithm
     baseEase: number;
     lapsesIntervalChange: number;
@@ -44,6 +45,7 @@ export const DEFAULT_SETTINGS: SRSettings = {
     highIntervalThreshold: 180,
     // UI settings
     initiallyExpandAllSubdecksInTree: false,
+    dueTodayShowNewNotes: false,
     // algorithm
     baseEase: 250,
     lapsesIntervalChange: 0.5,
@@ -251,6 +253,18 @@ export class SRSettingTab extends PluginSettingTab {
                     .setValue(this.plugin.data.settings.initiallyExpandAllSubdecksInTree)
                     .onChange(async (value) => {
                         this.plugin.data.settings.initiallyExpandAllSubdecksInTree = value;
+                        await this.plugin.savePluginData();
+                    }),
+            );
+
+        new Setting(containerEl)
+            .setName(t("DUE_TODAY_SHOW_NEW_NOTES"))
+            .setDesc(t("DUE_TODAY_SHOW_NEW_NOTES_DESC"))
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.data.settings.dueTodayShowNewNotes)
+                    .onChange(async (value) => {
+                        this.plugin.data.settings.dueTodayShowNewNotes = value;
                         await this.plugin.savePluginData();
                     }),
             );

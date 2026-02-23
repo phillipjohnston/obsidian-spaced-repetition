@@ -56,8 +56,10 @@ export class DueTodayView extends ItemView {
                 (sn) => sn.dueUnix <= endOfToday,
             );
 
-            // Only render deck if it has anything due today or new notes
-            const hasDueContent = dueNotes.length > 0 || deck.newNotes.length > 0;
+            const showNewNotes = this.plugin.data.settings.dueTodayShowNewNotes;
+
+            // Only render deck if it has scheduled notes due, or new notes when enabled
+            const hasDueContent = dueNotes.length > 0 || (showNewNotes && deck.newNotes.length > 0);
             if (!hasDueContent) {
                 continue;
             }
@@ -80,7 +82,7 @@ export class DueTodayView extends ItemView {
             )[0] as HTMLElement;
 
             // New (unscheduled) notes sub-folder
-            if (deck.newNotes.length > 0) {
+            if (showNewNotes && deck.newNotes.length > 0) {
                 const newFolderKey = deckKey + ":due-today:new";
                 const newFolderCollapsed = !deck.activeFolders.has(newFolderKey);
                 const newFolderEl = this.createFolder(
