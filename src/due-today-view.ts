@@ -17,6 +17,10 @@ export class DueTodayView extends ItemView {
         this.registerEvent(this.app.vault.on("rename", () => this.redraw()));
     }
 
+    public async onOpen(): Promise<void> {
+        this.redraw();
+    }
+
     public getViewType(): string {
         return DUE_TODAY_VIEW_TYPE;
     }
