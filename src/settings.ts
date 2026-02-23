@@ -14,6 +14,7 @@ export interface SRSettings {
     maxNDaysNotesReviewQueue: number;
     // filtering
     highIntervalThreshold: number;
+    mostOverdueThreshold: number;
     // UI preferences
     initiallyExpandAllSubdecksInTree: boolean;
     dueTodayShowNewNotes: boolean;
@@ -41,6 +42,7 @@ export const DEFAULT_SETTINGS: SRSettings = {
     maxNDaysNotesReviewQueue: 365,
     // filtering
     highIntervalThreshold: 180,
+    mostOverdueThreshold: 180,
     // UI settings
     initiallyExpandAllSubdecksInTree: false,
     dueTodayShowNewNotes: false,
@@ -227,6 +229,46 @@ export class SRSettingTab extends PluginSettingTab {
                     .onClick(async () => {
                         this.plugin.data.settings.highIntervalThreshold =
                             DEFAULT_SETTINGS.highIntervalThreshold;
+                        await this.plugin.savePluginData();
+                        this.display();
+                    });
+            });
+
+        new Setting(containerEl)
+            .setName("Most overdue threshold")
+            .setDesc(
+                "Minimum days overdue for notes to appear in 'Review Most Overdue Notes' command.",
+            )
+            .addText((text) =>
+                text
+                    .setValue(this.plugin.data.settings.mostOverdueThreshold.toString())
+                    .onChange((value) => {
+                        applySettingsUpdate(async () => {
+                            const numValue: number = Number.parseInt(value);
+                            if (!isNaN(numValue)) {
+                                if (numValue < 1) {
+                                    new Notice("Value must be at least 1");
+                                    text.setValue(
+                                        this.plugin.data.settings.mostOverdueThreshold.toString(),
+                                    );
+                                    return;
+                                }
+
+                                this.plugin.data.settings.mostOverdueThreshold = numValue;
+                                await this.plugin.savePluginData();
+                            } else {
+                                new Notice(t("VALID_NUMBER_WARNING"));
+                            }
+                        });
+                    }),
+            )
+            .addExtraButton((button) => {
+                button
+                    .setIcon("reset")
+                    .setTooltip(t("RESET_DEFAULT"))
+                    .onClick(async () => {
+                        this.plugin.data.settings.mostOverdueThreshold =
+                            DEFAULT_SETTINGS.mostOverdueThreshold;
                         await this.plugin.savePluginData();
                         this.display();
                     });

@@ -266,6 +266,14 @@ export default class SRPlugin extends Plugin {
         });
 
         this.addCommand({
+            id: "srs-note-review-most-overdue",
+            name: "Review Most Overdue Notes",
+            callback: async () => {
+                await this.reviewMostOverdueNotes();
+            },
+        });
+
+        this.addCommand({
             id: "srs-open-due-today-view",
             name: t("DUE_TODAY_OPEN_CMD"),
             callback: () => {
@@ -960,6 +968,64 @@ export default class SRPlugin extends Plugin {
         await this.reviewNextNote(tempDeckKey);
     }
 
+
+    private async reviewMostOverdueNotes(): Promise<void> {
+        const threshold = this.data.settings.mostOverdueThreshold;
+        const now = window.moment(Date.now());
+        const nowUnix = now.valueOf();
+        const thresholdMs = threshold * 24 * 3600 * 1000;
+
+        // Create temporary deck key
+        const tempDeckKey = `__mostOverdue:${threshold}+`;
+
+        // Create review deck
+        const tempDeck = new ReviewDeck(tempDeckKey);
+
+        // Collect overdue notes from all decks
+        const seenPaths = new Set<string>();
+
+        for (const deckKey in this.reviewDecks) {
+            const deck = this.reviewDecks[deckKey];
+
+            for (const sNote of deck.scheduledNotes) {
+                // Skip if we've already added this note (could be in multiple decks)
+                if (seenPaths.has(sNote.note.path)) {
+                    continue;
+                }
+
+                // Only include notes that are overdue by at least threshold days
+                if (nowUnix - sNote.dueUnix >= thresholdMs) {
+                    seenPaths.add(sNote.note.path);
+                    tempDeck.scheduledNotes.push({
+                        note: sNote.note,
+                        dueUnix: sNote.dueUnix,
+                        ease: sNote.ease,
+                        noteType: sNote.noteType,
+                        interval: sNote.interval,
+                        rebalance: sNote.rebalance,
+                    });
+                    tempDeck.dueNotesCount++;
+                }
+            }
+        }
+
+        if (tempDeck.scheduledNotes.length === 0) {
+            new Notice(`No notes overdue by ${threshold}+ days`);
+            return;
+        }
+
+        // Sort oldest-due first (most overdue at the front)
+        tempDeck.sortScheduledNotes();
+
+        // Temporarily add to decks and review
+        this.reviewDecks[tempDeckKey] = tempDeck;
+
+        new Notice(
+            `Starting most-overdue review: ${tempDeck.dueNotesCount} notes overdue by ${threshold}+ days`,
+        );
+
+        await this.reviewNextNote(tempDeckKey);
+    }
 
     // Cache Management Methods
 
