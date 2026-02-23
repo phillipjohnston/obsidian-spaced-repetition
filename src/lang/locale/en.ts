@@ -84,4 +84,12 @@ export default {
     YESTERDAY: "Yesterday",
     TODAY: "Today",
     TOMORROW: "Tomorrow",
+
+    // due-today-view.ts
+    DUE_TODAY_VIEW_TITLE: "Due Today",
+    DUE_TODAY_OPEN_CMD: "Open Due Today pane",
+    DUE_TODAY_OVERDUE: "Overdue",
+    DUE_TODAY_NEW: "New",
+    DUE_TODAY_EMPTY: "Nothing due today",
+    DUE_TODAY_COUNT: "${count} due",
 };
