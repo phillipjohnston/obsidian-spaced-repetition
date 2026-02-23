@@ -1,7 +1,5 @@
 import { App, FuzzySuggestModal, TFile } from "obsidian";
 
-import { t } from "src/lang/helpers";
-
 export enum NoteTypes {
     ALL,
     STANDARD,
@@ -28,7 +26,7 @@ export class ReviewDeck {
 
     constructor(name: string) {
         this.deckName = name;
-        this.activeFolders = new Set([this.deckName, t("TODAY")]);
+        this.activeFolders = new Set([this.deckName]);
     }
 
     public sortNewNotes(): void {

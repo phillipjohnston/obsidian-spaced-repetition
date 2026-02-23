@@ -16,7 +16,6 @@ import {
 import { log_debug, setLogDebugMode } from "src/logger";
 
 import { SRSettingTab, SRSettings, DEFAULT_SETTINGS } from "src/settings";
-import { ReviewQueueListView, REVIEW_QUEUE_VIEW_TYPE } from "src/sidebar";
 import { DueTodayView, DUE_TODAY_VIEW_TYPE } from "src/due-today-view";
 import {
     ReviewResponse,
@@ -43,7 +42,6 @@ const DEFAULT_DATA: PluginData = {
 
 export default class SRPlugin extends Plugin {
     private statusBar: HTMLElement;
-    private reviewQueueView: ReviewQueueListView;
     private dueTodayView: DueTodayView;
     public data: PluginData;
 
@@ -286,7 +284,6 @@ export default class SRPlugin extends Plugin {
     }
 
     onunload(): void {
-        this.app.workspace.getLeavesOfType(REVIEW_QUEUE_VIEW_TYPE).forEach((leaf) => leaf.detach());
         this.app.workspace.getLeavesOfType(DUE_TODAY_VIEW_TYPE).forEach((leaf) => leaf.detach());
     }
 
@@ -313,9 +310,6 @@ export default class SRPlugin extends Plugin {
 
         // Update UI
         this.updateStatusBar();
-        if (this.data.settings.enableNoteReviewPaneOnStartup) {
-            this.reviewQueueView.redraw();
-        }
         const dueTodayLeaves = this.app.workspace.getLeavesOfType(DUE_TODAY_VIEW_TYPE);
         if (dueTodayLeaves.length > 0 && this.dueTodayView) {
             this.dueTodayView.redraw();
@@ -1242,24 +1236,9 @@ export default class SRPlugin extends Plugin {
 
     initView(): void {
         this.registerView(
-            REVIEW_QUEUE_VIEW_TYPE,
-            (leaf) => (this.reviewQueueView = new ReviewQueueListView(leaf, this)),
-        );
-
-        this.registerView(
             DUE_TODAY_VIEW_TYPE,
             (leaf) => (this.dueTodayView = new DueTodayView(leaf, this)),
         );
-
-        if (
-            this.data.settings.enableNoteReviewPaneOnStartup &&
-            this.app.workspace.getLeavesOfType(REVIEW_QUEUE_VIEW_TYPE).length == 0
-        ) {
-            this.app.workspace.getRightLeaf(false).setViewState({
-                type: REVIEW_QUEUE_VIEW_TYPE,
-                active: true,
-            });
-        }
     }
 
     private openDueTodayView(): void {

@@ -26,7 +26,6 @@ export default {
     FOLDERS_TO_IGNORE: "Folders to ignore",
     FOLDERS_TO_IGNORE_DESC: "Enter folder paths separated by newlines i.e. Templates Meta/Scripts",
     NOTES: "Notes",
-    REVIEW_PANE_ON_STARTUP: "Enable note review pane on startup",
     TAGS_TO_REVIEW: "Tags to review",
     TAGS_TO_REVIEW_DESC: "Enter tags separated by spaces or newlines i.e. #review #tag2 #tag3.",
     OPEN_RANDOM_NOTE: "Open a random note for review",
@@ -77,15 +76,8 @@ export default {
     DISPLAY_DEBUG_INFO: "Display debugging information on the developer console?",
     RESET_DEFAULT: "Reset to default",
 
-    // sidebar.ts
-    NOTES_REVIEW_QUEUE: "Notes Review Queue",
-    CLOSE: "Close",
-    NEW: "New",
-    YESTERDAY: "Yesterday",
-    TODAY: "Today",
-    TOMORROW: "Tomorrow",
-
     // due-today-view.ts
+    CLOSE: "Close",
     DUE_TODAY_VIEW_TITLE: "Due Today",
     DUE_TODAY_OPEN_CMD: "Open Due Today pane",
     DUE_TODAY_OVERDUE: "Overdue",

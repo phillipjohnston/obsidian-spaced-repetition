@@ -5,7 +5,6 @@ import { setLogDebugMode } from "src/logger";
 
 export interface SRSettings {
     // notes
-    enableNoteReviewPaneOnStartup: boolean;
     tagsToReview: string[];
     noteFoldersToIgnore: string[];
     openRandomNote: boolean;
@@ -33,7 +32,6 @@ export interface SRSettings {
 
 export const DEFAULT_SETTINGS: SRSettings = {
     // notes
-    enableNoteReviewPaneOnStartup: true,
     tagsToReview: ["#review"],
     noteFoldersToIgnore: [],
     openRandomNote: false,
@@ -104,15 +102,6 @@ export class SRSettingTab extends PluginSettingTab {
             );
 
         containerEl.createEl("h3", { text: `${t("NOTES")}` });
-
-        new Setting(containerEl).setName(t("REVIEW_PANE_ON_STARTUP")).addToggle((toggle) =>
-            toggle
-                .setValue(this.plugin.data.settings.enableNoteReviewPaneOnStartup)
-                .onChange(async (value) => {
-                    this.plugin.data.settings.enableNoteReviewPaneOnStartup = value;
-                    await this.plugin.savePluginData();
-                }),
-        );
 
         new Setting(containerEl)
             .setName(t("TAGS_TO_REVIEW"))
