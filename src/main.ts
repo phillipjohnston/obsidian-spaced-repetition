@@ -653,7 +653,8 @@ export default class SRPlugin extends Plugin {
             (newNoteType === NoteTypes.GEOMETRIC && this.data.settings.autoMarkReviewedGeometric);
         const withinIntervalThreshold = interval <= this.data.settings.autoMarkReviewedThresholdDays;
         const dueDateThreshold = this.data.settings.autoMarkReviewedDueDateThresholdDays;
-        const withinDueDateThreshold = due.diff(window.moment().startOf("day"), "days") <= dueDateThreshold;
+        const daysUntilDue = due.diff(window.moment().startOf("day"), "days");
+        const withinDueDateThreshold = daysUntilDue <= dueDateThreshold;
         const perNoteOptOut: boolean = frontmatter["sr-no-auto-review"] === true;
         const shouldAutoMarkReviewed =
             !isPostpone && typeSettingEnabled && withinIntervalThreshold && withinDueDateThreshold && !perNoteOptOut;
@@ -1221,6 +1222,74 @@ export default class SRPlugin extends Plugin {
 
         // Schedule cache save
         await this.saveCache();
+
+        // Auto-review on edit: if any auto-mark-reviewed setting is enabled,
+        // check whether this file qualifies and trigger a Good review.
+        await this.maybeAutoReviewOnEdit(file);
+    }
+
+    private async maybeAutoReviewOnEdit(file: TFile): Promise<void> {
+        // Bail early if no auto-mark setting is enabled at all
+        if (
+            !this.data.settings.autoMarkReviewedStandard &&
+            !this.data.settings.autoMarkReviewedPeriodic &&
+            !this.data.settings.autoMarkReviewedGeometric
+        ) {
+            return;
+        }
+
+        const fileCachedData = this.app.metadataCache.getFileCache(file) || {};
+        const frontmatter: FrontMatterCache | Record<string, unknown> =
+            fileCachedData.frontmatter || {};
+
+        // Must have SR scheduling data
+        if (
+            !Object.prototype.hasOwnProperty.call(frontmatter, "sr-due") ||
+            !Object.prototype.hasOwnProperty.call(frontmatter, "sr-interval") ||
+            !Object.prototype.hasOwnProperty.call(frontmatter, "sr-ease")
+        ) {
+            return;
+        }
+
+        // Once-per-day debounce: if already reviewed today, skip
+        const todayString = window.moment().format("YYYY-MM-DD");
+        if (frontmatter["reviewed"] === todayString) {
+            return;
+        }
+
+        // Per-note opt-out
+        if (frontmatter["sr-no-auto-review"] === true) {
+            return;
+        }
+
+        const interval: number = frontmatter["sr-interval"] as number;
+        const ease: number = frontmatter["sr-ease"] as number;
+        const noteType =
+            ease < 0 ? NoteTypes.GEOMETRIC : ease === 0 ? NoteTypes.PERIODIC : NoteTypes.STANDARD;
+
+        // Check per-type setting
+        const typeSettingEnabled =
+            (noteType === NoteTypes.STANDARD && this.data.settings.autoMarkReviewedStandard) ||
+            (noteType === NoteTypes.PERIODIC && this.data.settings.autoMarkReviewedPeriodic) ||
+            (noteType === NoteTypes.GEOMETRIC && this.data.settings.autoMarkReviewedGeometric);
+        if (!typeSettingEnabled) {
+            return;
+        }
+
+        // Interval threshold
+        if (interval > this.data.settings.autoMarkReviewedThresholdDays) {
+            return;
+        }
+
+        // Due date threshold
+        const due = window.moment(frontmatter["sr-due"] as string, ["YYYY-MM-DD", "DD-MM-YYYY", "ddd MMM DD YYYY"]);
+        const daysUntilDue = due.diff(window.moment().startOf("day"), "days");
+        if (daysUntilDue > this.data.settings.autoMarkReviewedDueDateThresholdDays) {
+            return;
+        }
+
+        log_debug(`[AutoMarkReviewed] Triggering Good review on edit for ${file.path} (interval=${interval}, daysUntilDue=${daysUntilDue})`);
+        await this.saveReviewResponse(file, ReviewResponse.Good);
     }
 
     private async onFileDeleted(file: TFile): Promise<void> {
