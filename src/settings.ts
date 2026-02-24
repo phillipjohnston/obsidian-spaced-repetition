@@ -18,6 +18,11 @@ export interface SRSettings {
     // UI preferences
     initiallyExpandAllSubdecksInTree: boolean;
     dueTodayShowNewNotes: boolean;
+    // auto-mark reviewed
+    autoMarkReviewedStandard: boolean;
+    autoMarkReviewedPeriodic: boolean;
+    autoMarkReviewedGeometric: boolean;
+    autoMarkReviewedThresholdDays: number;
     // algorithm
     baseEase: number;
     lapsesIntervalChange: number;
@@ -46,6 +51,11 @@ export const DEFAULT_SETTINGS: SRSettings = {
     // UI settings
     initiallyExpandAllSubdecksInTree: false,
     dueTodayShowNewNotes: false,
+    // auto-mark reviewed
+    autoMarkReviewedStandard: false,
+    autoMarkReviewedPeriodic: false,
+    autoMarkReviewedGeometric: false,
+    autoMarkReviewedThresholdDays: 30,
     // algorithm
     baseEase: 250,
     lapsesIntervalChange: 0.5,
@@ -299,6 +309,82 @@ export class SRSettingTab extends PluginSettingTab {
                         await this.plugin.savePluginData();
                     }),
             );
+
+        containerEl.createEl("h3", { text: `${t("AUTO_MARK_REVIEWED_HEADER")}` });
+
+        new Setting(containerEl)
+            .setName(t("AUTO_MARK_REVIEWED_STANDARD"))
+            .setDesc(t("AUTO_MARK_REVIEWED_STANDARD_DESC"))
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.data.settings.autoMarkReviewedStandard)
+                    .onChange(async (value) => {
+                        this.plugin.data.settings.autoMarkReviewedStandard = value;
+                        await this.plugin.savePluginData();
+                    }),
+            );
+
+        new Setting(containerEl)
+            .setName(t("AUTO_MARK_REVIEWED_PERIODIC"))
+            .setDesc(t("AUTO_MARK_REVIEWED_PERIODIC_DESC"))
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.data.settings.autoMarkReviewedPeriodic)
+                    .onChange(async (value) => {
+                        this.plugin.data.settings.autoMarkReviewedPeriodic = value;
+                        await this.plugin.savePluginData();
+                    }),
+            );
+
+        new Setting(containerEl)
+            .setName(t("AUTO_MARK_REVIEWED_GEOMETRIC"))
+            .setDesc(t("AUTO_MARK_REVIEWED_GEOMETRIC_DESC"))
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.data.settings.autoMarkReviewedGeometric)
+                    .onChange(async (value) => {
+                        this.plugin.data.settings.autoMarkReviewedGeometric = value;
+                        await this.plugin.savePluginData();
+                    }),
+            );
+
+        new Setting(containerEl)
+            .setName(t("AUTO_MARK_REVIEWED_THRESHOLD"))
+            .setDesc(t("AUTO_MARK_REVIEWED_THRESHOLD_DESC"))
+            .addText((text) =>
+                text
+                    .setValue(this.plugin.data.settings.autoMarkReviewedThresholdDays.toString())
+                    .onChange((value) => {
+                        applySettingsUpdate(async () => {
+                            const numValue: number = Number.parseInt(value);
+                            if (!isNaN(numValue)) {
+                                if (numValue < 1) {
+                                    new Notice(t("AUTO_MARK_REVIEWED_THRESHOLD_MIN_WARNING"));
+                                    text.setValue(
+                                        this.plugin.data.settings.autoMarkReviewedThresholdDays.toString(),
+                                    );
+                                    return;
+                                }
+
+                                this.plugin.data.settings.autoMarkReviewedThresholdDays = numValue;
+                                await this.plugin.savePluginData();
+                            } else {
+                                new Notice(t("VALID_NUMBER_WARNING"));
+                            }
+                        });
+                    }),
+            )
+            .addExtraButton((button) => {
+                button
+                    .setIcon("reset")
+                    .setTooltip(t("RESET_DEFAULT"))
+                    .onClick(async () => {
+                        this.plugin.data.settings.autoMarkReviewedThresholdDays =
+                            DEFAULT_SETTINGS.autoMarkReviewedThresholdDays;
+                        await this.plugin.savePluginData();
+                        this.display();
+                    });
+            });
 
         containerEl.createEl("h3", { text: `${t("ALGORITHM")}` });
         containerEl.createDiv().innerHTML = t("CHECK_ALGORITHM_WIKI", {

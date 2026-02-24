@@ -642,11 +642,29 @@ export default class SRPlugin extends Plugin {
 
         const dueString: string = due.format("YYYY-MM-DD");
 
+        // Auto-mark reviewed logic
+        const isPostpone =
+            response === ReviewResponse.Postpone || response === ReviewResponse.PostponeLong;
+        const newNoteType =
+            ease < 0 ? NoteTypes.GEOMETRIC : ease === 0 ? NoteTypes.PERIODIC : NoteTypes.STANDARD;
+        const typeSettingEnabled =
+            (newNoteType === NoteTypes.STANDARD && this.data.settings.autoMarkReviewedStandard) ||
+            (newNoteType === NoteTypes.PERIODIC && this.data.settings.autoMarkReviewedPeriodic) ||
+            (newNoteType === NoteTypes.GEOMETRIC && this.data.settings.autoMarkReviewedGeometric);
+        const withinThreshold = interval <= this.data.settings.autoMarkReviewedThresholdDays;
+        const perNoteOptOut: boolean = frontmatter["sr-no-auto-review"] === true;
+        const shouldAutoMarkReviewed =
+            !isPostpone && typeSettingEnabled && withinThreshold && !perNoteOptOut;
+        const todayString: string = window.moment().format("YYYY-MM-DD");
+
         // Update frontmatter using Obsidian's API
         await this.app.fileManager.processFrontMatter(note, (frontmatter) => {
             frontmatter["sr-interval"] = interval;
             frontmatter["sr-due"] = dueString;
             frontmatter["sr-ease"] = ease;
+            if (shouldAutoMarkReviewed) {
+                frontmatter["reviewed"] = todayString;
+            }
         });
 
         new Notice(t("RESPONSE_RECEIVED"));
@@ -669,8 +687,6 @@ export default class SRPlugin extends Plugin {
 
         // Update in-memory deck data to avoid needing a full sync on deck change
         const newDueUnix = due.valueOf();
-        const newNoteType =
-            ease < 0 ? NoteTypes.GEOMETRIC : ease === 0 ? NoteTypes.PERIODIC : NoteTypes.STANDARD;
 
         // Update the note in all decks that contain it
         for (const deckKey in this.reviewDecks) {
