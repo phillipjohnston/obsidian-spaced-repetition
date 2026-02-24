@@ -1217,6 +1217,12 @@ export default class SRPlugin extends Plugin {
     }
 
     private async maybeAutoReviewOnEdit(file: TFile): Promise<void> {
+        // Only trigger for the currently active file — ignore external edits
+        const activeFile = this.app.workspace.getActiveFile();
+        if (!activeFile || activeFile.path !== file.path) {
+            return;
+        }
+
         // Bail early if no auto-mark setting is enabled at all
         if (
             !this.data.settings.autoMarkReviewedStandard &&
