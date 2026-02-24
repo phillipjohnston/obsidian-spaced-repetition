@@ -651,10 +651,12 @@ export default class SRPlugin extends Plugin {
             (newNoteType === NoteTypes.STANDARD && this.data.settings.autoMarkReviewedStandard) ||
             (newNoteType === NoteTypes.PERIODIC && this.data.settings.autoMarkReviewedPeriodic) ||
             (newNoteType === NoteTypes.GEOMETRIC && this.data.settings.autoMarkReviewedGeometric);
-        const withinThreshold = interval <= this.data.settings.autoMarkReviewedThresholdDays;
+        const withinIntervalThreshold = interval <= this.data.settings.autoMarkReviewedThresholdDays;
+        const dueDateThreshold = this.data.settings.autoMarkReviewedDueDateThresholdDays;
+        const withinDueDateThreshold = due.diff(window.moment().startOf("day"), "days") <= dueDateThreshold;
         const perNoteOptOut: boolean = frontmatter["sr-no-auto-review"] === true;
         const shouldAutoMarkReviewed =
-            !isPostpone && typeSettingEnabled && withinThreshold && !perNoteOptOut;
+            !isPostpone && typeSettingEnabled && withinIntervalThreshold && withinDueDateThreshold && !perNoteOptOut;
         const todayString: string = window.moment().format("YYYY-MM-DD");
 
         // Update frontmatter using Obsidian's API

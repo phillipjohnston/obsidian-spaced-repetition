@@ -23,6 +23,7 @@ export interface SRSettings {
     autoMarkReviewedPeriodic: boolean;
     autoMarkReviewedGeometric: boolean;
     autoMarkReviewedThresholdDays: number;
+    autoMarkReviewedDueDateThresholdDays: number;
     // algorithm
     baseEase: number;
     lapsesIntervalChange: number;
@@ -56,6 +57,7 @@ export const DEFAULT_SETTINGS: SRSettings = {
     autoMarkReviewedPeriodic: false,
     autoMarkReviewedGeometric: false,
     autoMarkReviewedThresholdDays: 30,
+    autoMarkReviewedDueDateThresholdDays: 30,
     // algorithm
     baseEase: 250,
     lapsesIntervalChange: 0.5,
@@ -381,6 +383,44 @@ export class SRSettingTab extends PluginSettingTab {
                     .onClick(async () => {
                         this.plugin.data.settings.autoMarkReviewedThresholdDays =
                             DEFAULT_SETTINGS.autoMarkReviewedThresholdDays;
+                        await this.plugin.savePluginData();
+                        this.display();
+                    });
+            });
+
+        new Setting(containerEl)
+            .setName(t("AUTO_MARK_REVIEWED_DUE_DATE_THRESHOLD"))
+            .setDesc(t("AUTO_MARK_REVIEWED_DUE_DATE_THRESHOLD_DESC"))
+            .addText((text) =>
+                text
+                    .setValue(this.plugin.data.settings.autoMarkReviewedDueDateThresholdDays.toString())
+                    .onChange((value) => {
+                        applySettingsUpdate(async () => {
+                            const numValue: number = Number.parseInt(value);
+                            if (!isNaN(numValue)) {
+                                if (numValue < 1) {
+                                    new Notice(t("AUTO_MARK_REVIEWED_THRESHOLD_MIN_WARNING"));
+                                    text.setValue(
+                                        this.plugin.data.settings.autoMarkReviewedDueDateThresholdDays.toString(),
+                                    );
+                                    return;
+                                }
+
+                                this.plugin.data.settings.autoMarkReviewedDueDateThresholdDays = numValue;
+                                await this.plugin.savePluginData();
+                            } else {
+                                new Notice(t("VALID_NUMBER_WARNING"));
+                            }
+                        });
+                    }),
+            )
+            .addExtraButton((button) => {
+                button
+                    .setIcon("reset")
+                    .setTooltip(t("RESET_DEFAULT"))
+                    .onClick(async () => {
+                        this.plugin.data.settings.autoMarkReviewedDueDateThresholdDays =
+                            DEFAULT_SETTINGS.autoMarkReviewedDueDateThresholdDays;
                         await this.plugin.savePluginData();
                         this.display();
                     });

@@ -96,4 +96,6 @@ export default {
     AUTO_MARK_REVIEWED_THRESHOLD: "Interval threshold (days)",
     AUTO_MARK_REVIEWED_THRESHOLD_DESC: "Maximum new interval in days for a note to be auto-marked as reviewed. Notes scheduled further than this will not be marked. Default: 30.",
     AUTO_MARK_REVIEWED_THRESHOLD_MIN_WARNING: "The threshold must be at least 1 day.",
+    AUTO_MARK_REVIEWED_DUE_DATE_THRESHOLD: "Due date threshold (days)",
+    AUTO_MARK_REVIEWED_DUE_DATE_THRESHOLD_DESC: "Maximum number of days until the next due date for a note to be auto-marked as reviewed. Notes due further than this will not be marked. Default: 30.",
 };
