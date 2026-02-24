@@ -98,4 +98,9 @@ export default {
     AUTO_MARK_REVIEWED_THRESHOLD_MIN_WARNING: "The threshold must be at least 1 day.",
     AUTO_MARK_REVIEWED_DUE_DATE_THRESHOLD: "Due date threshold (days)",
     AUTO_MARK_REVIEWED_DUE_DATE_THRESHOLD_DESC: "Maximum number of days until the next due date for a note to be auto-marked as reviewed. Notes due further than this will not be marked. Default: 30.",
+    DEFAULT_NOTE_TYPE: "Default review type for new notes",
+    DEFAULT_NOTE_TYPE_DESC: "The scheduling algorithm applied to new notes that have no sr-type frontmatter. Notes with an explicit sr-type always use that type.",
+    DEFAULT_NOTE_TYPE_STANDARD: "Standard (SR)",
+    DEFAULT_NOTE_TYPE_GEOMETRIC: "Geometric",
+    DEFAULT_NOTE_TYPE_PERIODIC: "Periodic",
 };

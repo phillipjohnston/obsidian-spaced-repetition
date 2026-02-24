@@ -3,6 +3,8 @@ import type SRPlugin from "src/main";
 import { t } from "src/lang/helpers";
 import { setLogDebugMode } from "src/logger";
 
+export type NoteTypeDefault = "standard" | "geometric" | "periodic";
+
 export interface SRSettings {
     // notes
     tagsToReview: string[];
@@ -12,6 +14,7 @@ export interface SRSettings {
     scheduleWeekends: boolean;
     disableFileMenuReviewOptions: boolean;
     maxNDaysNotesReviewQueue: number;
+    defaultNoteType: NoteTypeDefault;
     // filtering
     highIntervalThreshold: number;
     mostOverdueThreshold: number;
@@ -46,6 +49,7 @@ export const DEFAULT_SETTINGS: SRSettings = {
     scheduleWeekends: false,
     disableFileMenuReviewOptions: false,
     maxNDaysNotesReviewQueue: 365,
+    defaultNoteType: "standard",
     // filtering
     highIntervalThreshold: 180,
     mostOverdueThreshold: 180,
@@ -205,6 +209,21 @@ export class SRSettingTab extends PluginSettingTab {
                         this.display();
                     });
             });
+
+        new Setting(containerEl)
+            .setName(t("DEFAULT_NOTE_TYPE"))
+            .setDesc(t("DEFAULT_NOTE_TYPE_DESC"))
+            .addDropdown((dropdown) =>
+                dropdown
+                    .addOption("standard", t("DEFAULT_NOTE_TYPE_STANDARD"))
+                    .addOption("geometric", t("DEFAULT_NOTE_TYPE_GEOMETRIC"))
+                    .addOption("periodic", t("DEFAULT_NOTE_TYPE_PERIODIC"))
+                    .setValue(this.plugin.data.settings.defaultNoteType)
+                    .onChange(async (value: string) => {
+                        this.plugin.data.settings.defaultNoteType = value as NoteTypeDefault;
+                        await this.plugin.savePluginData();
+                    }),
+            );
 
         new Setting(containerEl)
             .setName("High interval threshold")

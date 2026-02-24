@@ -556,22 +556,33 @@ export default class SRPlugin extends Plugin {
                     return;
                 }
             } else {
-                let linkTotal = 0,
-                    linkPGTotal = 0,
-                    totalLinkCount = 0;
+                const defaultType = this.data.settings.defaultNoteType;
+                if (defaultType === "geometric") {
+                    interval = 1;
+                    ease = -this.data.settings.geometricNoteFactor;
+                    delayBeforeReview = 0;
+                } else if (defaultType === "periodic") {
+                    interval = this.data.settings.periodicNoteDefaultInterval;
+                    ease = 0;
+                    delayBeforeReview = 0;
+                } else {
+                    let linkTotal = 0,
+                        linkPGTotal = 0,
+                        totalLinkCount = 0;
 
-                const linkContribution: number =
-                    this.data.settings.maxLinkFactor *
-                    Math.min(1.0, Math.log(totalLinkCount + 0.5) / Math.log(64));
-                ease =
-                    (1.0 - linkContribution) * this.data.settings.baseEase +
-                    (totalLinkCount > 0
-                        ? (linkContribution * linkTotal) / linkPGTotal
-                        : linkContribution * this.data.settings.baseEase);
+                    const linkContribution: number =
+                        this.data.settings.maxLinkFactor *
+                        Math.min(1.0, Math.log(totalLinkCount + 0.5) / Math.log(64));
+                    ease =
+                        (1.0 - linkContribution) * this.data.settings.baseEase +
+                        (totalLinkCount > 0
+                            ? (linkContribution * linkTotal) / linkPGTotal
+                            : linkContribution * this.data.settings.baseEase);
 
-                ease = Math.round(ease);
-                interval = 1.0;
-                delayBeforeReview = 0;
+                    ease = Math.round(ease);
+                    interval = 1.0;
+                    delayBeforeReview = 0;
+                }
             }
         } else {
             interval = frontmatter["sr-interval"];
