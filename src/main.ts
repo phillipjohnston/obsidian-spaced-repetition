@@ -496,7 +496,7 @@ export default class SRPlugin extends Plugin {
         this.cache.noteCount = Object.keys(this.cache.notes).length;
     }
 
-    async saveReviewResponse(note: TFile, response: ReviewResponse): Promise<void> {
+    async saveReviewResponse(note: TFile, response: ReviewResponse, autoAdvance = true): Promise<void> {
         const fileCachedData = this.app.metadataCache.getFileCache(note) || {};
         const frontmatter: FrontMatterCache | Record<string, unknown> =
             fileCachedData.frontmatter || {};
@@ -719,7 +719,7 @@ export default class SRPlugin extends Plugin {
         this.updateStatusBar();
 
         // Advance to next note if auto-advance is enabled
-        if (shouldAdvance && this.data.settings.autoNextNote) {
+        if (autoAdvance && shouldAdvance && this.data.settings.autoNextNote) {
             await this.reviewNextNote(this.lastSelectedReviewDeck);
         }
     }
@@ -1277,7 +1277,7 @@ export default class SRPlugin extends Plugin {
         }
 
         log_debug(`[AutoMarkReviewed] Triggering Good review on edit for ${file.path} (interval=${interval}, daysUntilDue=${daysUntilDue})`);
-        await this.saveReviewResponse(file, ReviewResponse.Good);
+        await this.saveReviewResponse(file, ReviewResponse.Good, false);
     }
 
     private async onFileDeleted(file: TFile): Promise<void> {
