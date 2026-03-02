@@ -57,6 +57,9 @@ export default class SRPlugin extends Plugin {
     private cache: ReviewCache | null = null;
     private cacheSaveTimer: number = 0;
 
+    // Flag to suppress auto-review when a review action itself writes frontmatter
+    private _skipAutoReview = false;
+
     async onload(): Promise<void> {
         await this.loadPluginData();
 
@@ -657,6 +660,12 @@ export default class SRPlugin extends Plugin {
             response === ReviewResponse.Postpone || response === ReviewResponse.PostponeLong;
         const todayString: string = window.moment().format("YYYY-MM-DD");
 
+        // Suppress auto-review triggered by the frontmatter write we're about to do.
+        // This is especially important for postpone, which doesn't set `reviewed`.
+        if (isPostpone) {
+            this._skipAutoReview = true;
+        }
+
         // Update frontmatter using Obsidian's API
         await this.app.fileManager.processFrontMatter(note, (frontmatter) => {
             frontmatter["sr-interval"] = interval;
@@ -666,6 +675,8 @@ export default class SRPlugin extends Plugin {
                 frontmatter["reviewed"] = todayString;
             }
         });
+
+        this._skipAutoReview = false;
 
         new Notice(t("RESPONSE_RECEIVED"));
 
@@ -1228,6 +1239,11 @@ export default class SRPlugin extends Plugin {
     }
 
     private async maybeAutoReviewOnEdit(file: TFile): Promise<void> {
+        // Skip if a review action itself triggered this metadata change
+        if (this._skipAutoReview) {
+            return;
+        }
+
         // Only trigger for the currently active file — ignore external edits
         const activeFile = this.app.workspace.getActiveFile();
         if (!activeFile || activeFile.path !== file.path) {
