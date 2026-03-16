@@ -12,6 +12,8 @@ export default {
     RESET_NOTE_CMD: "Reset note review progress",
     POSTPONE_NOTE_CMD: "Postpone note review",
     POSTPONE_LONG_NOTE_CMD: "Postpone note review (long)",
+    DOUBLE_INTERVAL_CMD: "Double interval",
+    DOUBLE_INTERVAL_SCHEDULE_CMD: "Double interval and schedule review",
     SKIP_NOTE_CMD: "Skip note review",
     NOTE_IN_IGNORED_FOLDER: "Note is saved under ignored folder (check settings).",
     PLEASE_TAG_NOTE: "Please tag the note appropriately for reviewing (in settings).",

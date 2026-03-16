@@ -261,6 +261,28 @@ export default class SRPlugin extends Plugin {
         });
 
         this.addCommand({
+            id: "srs-note-review-double-interval",
+            name: t("DOUBLE_INTERVAL_CMD"),
+            callback: () => {
+                const openFile: TFile | null = this.app.workspace.getActiveFile();
+                if (openFile && openFile.extension === "md") {
+                    this.saveReviewResponse(openFile, ReviewResponse.DoubleInterval);
+                }
+            },
+        });
+
+        this.addCommand({
+            id: "srs-note-review-double-interval-schedule",
+            name: t("DOUBLE_INTERVAL_SCHEDULE_CMD"),
+            callback: () => {
+                const openFile: TFile | null = this.app.workspace.getActiveFile();
+                if (openFile && openFile.extension === "md") {
+                    this.saveReviewResponse(openFile, ReviewResponse.DoubleIntervalSchedule);
+                }
+            },
+        });
+
+        this.addCommand({
             id: "srs-note-review-high-interval",
             name: "Review High-Interval Notes",
             callback: async () => {
@@ -616,6 +638,13 @@ export default class SRPlugin extends Plugin {
             const postpone_interval = generatePostponeInterval(interval, 25, 7);
             var due = calculateDueDate(postpone_interval, this.data.settings.scheduleWeekends);
             log_debug("Postponing for " + postpone_interval + " days");
+        } else if (
+            response == ReviewResponse.DoubleInterval ||
+            response == ReviewResponse.DoubleIntervalSchedule
+        ) {
+            interval = Math.min(interval * 2, this.data.settings.maximumInterval);
+            var due = calculateDueDate(interval, this.data.settings.scheduleWeekends);
+            log_debug("Doubling interval to " + interval + " days");
         } else {
             const schedObj: Record<string, number> = schedule(
                 response,
@@ -657,7 +686,9 @@ export default class SRPlugin extends Plugin {
         const dueString: string = due.format("YYYY-MM-DD");
 
         const isPostpone =
-            response === ReviewResponse.Postpone || response === ReviewResponse.PostponeLong;
+            response === ReviewResponse.Postpone ||
+            response === ReviewResponse.PostponeLong ||
+            response === ReviewResponse.DoubleInterval;
         const todayString: string = window.moment().format("YYYY-MM-DD");
 
         // Suppress auto-review triggered by the frontmatter write we're about to do.

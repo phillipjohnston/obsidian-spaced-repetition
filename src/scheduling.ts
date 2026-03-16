@@ -10,6 +10,8 @@ export enum ReviewResponse {
     Reset,
     Postpone,
     PostponeLong,
+    DoubleInterval,
+    DoubleIntervalSchedule,
 }
 
 function hasFractionalPart(num: number): boolean {
