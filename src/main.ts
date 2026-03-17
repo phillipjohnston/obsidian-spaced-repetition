@@ -714,6 +714,7 @@ export default class SRPlugin extends Plugin {
         // Check if we should advance to next note BEFORE updating deck data
         // (since sorting will change the order)
         let shouldAdvance = false;
+        let selectedDeckAlreadyDecremented = false;
         if (this.lastSelectedReviewDeck) {
             const currentDeck = this.reviewDecks[this.lastSelectedReviewDeck];
             // We only want to advance if we're currently looking at a note in sequence.
@@ -724,6 +725,7 @@ export default class SRPlugin extends Plugin {
                 shouldAdvance = true;
                 currentDeck.currentIndex++;
                 currentDeck.dueNotesCount--;
+                selectedDeckAlreadyDecremented = true;
             }
         }
 
@@ -750,8 +752,7 @@ export default class SRPlugin extends Plugin {
 
                 // Update due counts if status changed
                 if (wasOverdue && !isNowOverdue) {
-                    // Note is no longer overdue
-                    if (deckKey === this.lastSelectedReviewDeck) {
+                    if (deckKey === this.lastSelectedReviewDeck && selectedDeckAlreadyDecremented) {
                         // dueNotesCount already decremented above
                     } else {
                         deck.dueNotesCount--;
